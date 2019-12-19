@@ -46,7 +46,7 @@ creating a customer using the `Payload::Customer` object.
 # Create a Customer
 customer = Payload::Customer.create(
 	email: 'matt.perez@example.com',
-	full_name: 'Matt Perez'
+	name: 'Matt Perez'
 )
 ```
 
