@@ -6,13 +6,11 @@ module Payload
 	end
 
 	class Customer < ARMObject
-		@spec = { 'object' => 'account' }
-		@poly = { 'type' => 'customer' }
+		@spec = { 'object' => 'customer' }
 	end
 
 	class ProcessingAccount < ARMObject
-		@spec = { 'object' => 'account' }
-		@poly = { 'type' => 'processing' }
+		@spec = { 'object' => 'processing_account' }
 	end
 
 	class Org < ARMObject
