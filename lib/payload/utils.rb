@@ -7,7 +7,7 @@ module Payload
 	def self.get_cls(data)
 		match = nil
 		for cls in subclasses(Payload::ARMObject)
-			if cls.spec['object'] != data['object']
+			if cls.spec&.fetch('object') != data['object']
 				next
 			end
 
