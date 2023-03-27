@@ -1,5 +1,5 @@
-require_relative "../exceptions"
-require_relative "../utils"
+require "payload/exceptions"
+require "payload/utils"
 require "net/http"
 require "uri"
 require "json"
