@@ -1,4 +1,4 @@
-require "payload/arm/object"
+require_relative "./arm/object"
 
 module Payload
 	class Account < ARMObject

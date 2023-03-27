@@ -1,5 +1,5 @@
-require "payload/exceptions"
-require "payload/utils"
+require_relative "../exceptions"
+require_relative "../utils"
 require "net/http"
 require "uri"
 require "json"
@@ -125,7 +125,14 @@ module Payload
 
 			if response.code == '200'
 				if data['object'] == 'list'
-					return data['values'].map {|obj| Payload::get_cls(obj).new(obj) }
+					return data['values'].map do |obj|
+						cls = Payload::get_cls(obj)
+						if cls.nil?
+							obj
+						else
+							cls.new(obj)
+						end
+					end
 				else
 					return Payload::get_cls(data).new(data)
 				end
