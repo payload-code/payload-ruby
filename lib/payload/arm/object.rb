@@ -1,4 +1,4 @@
-require "payload/arm/request"
+require_relative "./request"
 
 module Payload
 	class ARMObject
