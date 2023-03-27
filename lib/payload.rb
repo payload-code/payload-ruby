@@ -1,5 +1,5 @@
-require_relative "./payload/version"
-require_relative "./payload/objects"
+require "payload/version"
+require "payload/objects"
 
 module Payload
 	@URL = "https://api.payload.co"
