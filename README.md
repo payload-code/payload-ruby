@@ -18,12 +18,10 @@ gem install payload
 
 ## Get Started
 
-Once you've installed the Payload Python library to your environment,
-import the `payload` module to get started. **Note:** We recommend
-using the shorthand name of `pl` when importing.
+Once Payload has been added to your Gemfile and installed, use `require` as shown below to import it into your project.
 
-```python
-import payload as pl
+```ruby
+require 'payload'
 ```
 
 ### API Authentication
@@ -31,9 +29,9 @@ import payload as pl
 To authenticate with the Payload API, you'll need a live or test API key. API
 keys are accessible from within the Payload dashboard.
 
-```python
-import payload as pl
-pl.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
+```ruby
+require 'payload'
+Payload.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
 ```
 
 ### Creating an Object
