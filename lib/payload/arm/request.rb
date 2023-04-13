@@ -10,6 +10,7 @@ module Payload
 
 		def initialize(cls=nil)
 			@cls = cls
+			@selected_fields = ''
 			@filters = {}
 		end
 
@@ -17,7 +18,9 @@ module Payload
 			if @cls.poly
 				data = data.merge(@cls.poly)
 			end
-
+	
+			@selected_fields = args.join(',')
+	
 			return self
 		end
 
@@ -84,6 +87,14 @@ module Payload
 		end
 
 		def _request(method, id: nil, json: nil)
+
+			# Update @filters['fields'] with @selected_fields
+			fields_list = []
+			fields_list << @filters['fields'] if @filters['fields'] && !@filters['fields'].empty?
+			fields_list << @selected_fields if @selected_fields && !@selected_fields.empty?
+			@filters['fields'] = fields_list.join(',') if fields_list.any?
+			@filters['fields'] ||= '*'
+
 			if @cls.spec.key?("endpoint")
 				endpoint = @cls.spec["endpoint"]
 			else
