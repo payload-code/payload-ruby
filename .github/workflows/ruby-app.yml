@@ -22,7 +22,9 @@ jobs:
     - name: Install dependencies
       run: |
         gem install bundler
-        bundle install --gemspec=payload.gemspec --jobs 4 --retry 3
+        gem build payload.gemspec
+        gem install payload-*.gem
+        bundle install --jobs 4 --retry 3
 
     - name: Run RSpec tests
       run: |
