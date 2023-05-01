@@ -19,13 +19,6 @@ jobs:
       with:
         ruby-version: 3.0.1
 
-    - name: Install dependencies
-      run: |
-        gem install bundler
-        gem build payload.gemspec
-        gem install payload-*.gem
-        bundle install --jobs 4 --retry 3
-
     - name: Run RSpec tests
       run: |
         bundle exec rspec spec
