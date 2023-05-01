@@ -21,4 +21,5 @@ jobs:
 
     - name: Run RSpec tests
       run: |
+        gem install rspec
         rspec spec
