@@ -82,4 +82,8 @@ module Payload
 	class Webhook < ARMObject
 		@spec = { 'object' => 'webhook' }
 	end
+
+	class PaymentLink < ARMObject
+		@spec = { 'object' => 'payment_link' }
+	end
 end
