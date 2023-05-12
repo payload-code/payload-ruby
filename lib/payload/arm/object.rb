@@ -5,27 +5,38 @@ module Payload
 		@poly = nil
 		@data = nil
 		@@cache = {}
+		@session = nil
 
 		class << self
-			attr_reader :spec, :poly, :data
+			attr_reader :spec, :poly, :data, :session
 		end
 
-		def initialize(data)
+		def initialize(data, session = nil)
 			self.set_data(data)
+			@session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
 		end
 
 		def self.new(data)
-			if data.key?('id') and @@cache.key?(data['id'])
-				@@cache[data['id']].set_data(data)
-				return @@cache[data['id']]
+			id = data.key?(:id) ? data[:id] : data.key?('id')
+			if id and @@cache.key?(id)
+				@@cache[data[id]].set_data(data)
+				return @@cache[id]
 			else
 				inst = super
-				if data.key?('id') and not data['id'].nil? and not data['id'].empty?
-					@@cache[data['id']] = inst
+				if id.nil? and not id.empty?
+					@@cache[id] = inst
 				end
 
 				return inst
 			end
+		end
+
+		def session
+			@session
+		end
+
+		def set_session(session)
+			@session = session
 		end
 
 		def data
@@ -33,7 +44,7 @@ module Payload
 		end
 
 		def set_data(data)
-			@data = data
+			@data = data.transform_keys { |key| key.to_s }
 		end
 
 		def method_missing(name, *args)

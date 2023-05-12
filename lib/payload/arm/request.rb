@@ -8,8 +8,9 @@ module Payload
 	class ARMRequest
 		@cls = nil
 
-		def initialize(cls=nil)
+		def initialize(cls=nil, session=nil)
 			@cls = cls
+			@session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
 			@filters = {}
 		end
 
@@ -20,7 +21,7 @@ module Payload
 		end
 
 		def filter_by(*args, **data)
-			if @cls.poly
+			if !@cls.nil? && @cls.poly
 				data = data.merge(@cls.poly)
 			end
 
@@ -46,8 +47,35 @@ module Payload
 				._request('Put', json: updates)
 		end
 
-		def delete(objects)
-			deletes = objects.map {|o| o.id }.join('|')
+		def update_all(updates)
+			updates.map do |obj, update|
+				if obj.kind_of?(ARMObject)
+					if @cls and not obj.instance_of?(@cls)
+						throw "All objects must be of the same type"
+					end
+
+					@cls = obj.class
+				end
+			end
+
+			updates = {
+				object: 'list',
+				values: updates.map do |obj, update|
+					update['id'] = obj.id
+					update
+				end
+			}
+
+			return self._request('Put', json: updates)
+		end
+
+		def delete_all(objects)
+			deletes = objects.map {|o| {'id' => o.id }}
+			puts deletes
+			return self._request('Delete', json: deletes)
+		end
+
+		def delete()
 			return self.filter_by(mode: 'query', id: deletes)
 				._request('Delete')
 		end
@@ -81,11 +109,23 @@ module Payload
 			return self._request('Post', json: data)
 		end
 
+		def _execute_request(http, request)
+			http.request(request)
+		end
+
 		def _request(method, id: nil, json: nil)
-			if @cls.spec.key?("endpoint")
-				endpoint = @cls.spec["endpoint"]
+			if !@cls.nil?
+				if @cls.spec.key?("endpoint")
+					endpoint = @cls.spec["endpoint"]
+				else
+					endpoint = "/"+@cls.spec["object"]+"s"
+				end
 			else
-				endpoint = "/"+@cls.spec["object"]+"s"
+				if json.is_a? Array
+					if json.all? {|obj| obj.key?("object") }
+						endpoint = json[0]["object"]+"s"
+					end
+				end
 			end
 
 			if id
@@ -109,7 +149,7 @@ module Payload
 				request.add_field('Content-Type', 'application/json')
 			end
 
-			response = http.request(request)
+			response = self._execute_request(http, request)
 
 			begin
 				data = JSON.parse(response.body)
@@ -128,11 +168,15 @@ module Payload
 						if cls.nil?
 							obj
 						else
-							cls.new(obj)
+							ret = cls.new(obj)
+							ret.set_session(@session)
+							ret
 						end
 					end
 				else
-					return Payload::get_cls(data).new(data)
+					ret = Payload::get_cls(data).new(data)
+					ret.set_session(@session)
+					return ret
 				end
 			else
 				for error in Payload::subclasses(Payload::PayloadError)
