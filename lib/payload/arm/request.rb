@@ -70,13 +70,26 @@ module Payload
 		end
 
 		def delete_all(objects)
-			deletes = objects.map {|o| {'id' => o.id }}
-			puts deletes
-			return self._request('Delete', json: deletes)
+			deletes = objects.map do |obj|
+				if obj.kind_of?(ARMObject)
+					if @cls and not obj.instance_of?(@cls)
+						throw "All objects must be of the same type"
+					end
+
+					@cls = obj.class
+					obj = { id: obj.id }
+				end
+
+				obj
+			end
+
+			data = { object: 'list', values: deletes }
+
+			return self._request('Delete', json: data)
 		end
 
 		def delete()
-			return self.filter_by(mode: 'query', id: deletes)
+			return self.filter_by(mode: 'query')
 				._request('Delete')
 		end
 
@@ -132,7 +145,7 @@ module Payload
 				endpoint = File.join(endpoint, id)
 			end
 
-			url = URI.join(Payload::api_url, endpoint)
+			url = URI.join(@session.api_url, endpoint)
 			url.query = URI.encode_www_form(@filters)
 
 			http = Net::HTTP.new(url.host, url.port)
@@ -142,7 +155,7 @@ module Payload
 			end
 
 			request = Net::HTTP.const_get(method).new(url.request_uri)
-			request.basic_auth(Payload::api_key, '')
+			request.basic_auth(@session.api_key, '')
 
 			if json
 				request.body = json.to_json
@@ -168,8 +181,7 @@ module Payload
 						if cls.nil?
 							obj
 						else
-							ret = cls.new(obj)
-							ret.set_session(@session)
+							ret = cls.new(obj, @session)
 							ret
 						end
 					end

@@ -13,18 +13,29 @@ module Payload
 
 		def initialize(data, session = nil)
 			self.set_data(data)
-			@session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
 		end
 
-		def self.new(data)
-			id = data.key?(:id) ? data[:id] : data.key?('id')
-			if id and @@cache.key?(id)
-				@@cache[data[id]].set_data(data)
-				return @@cache[id]
+		def self.new(data, session = nil)
+
+			session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
+			session_key = session.to_s
+
+			if !@@cache.key?(session_key)
+				@@cache[session_key] = {}
+			end
+
+			session_cache = @@cache[session_key]
+
+			id = data.key?(:id) ? data[:id] : data.key?('id') ? data['id'] : nil
+			if id && session_cache.key?(id)
+				session_cache[id].set_data(data)
+				return session_cache[id]
 			else
 				inst = super
-				if id.nil? and not id.empty?
-					@@cache[id] = inst
+				inst.set_session(session)
+				inst.set_data(data)
+				if id
+					session_cache[id] = inst
 				end
 
 				return inst
@@ -60,37 +71,44 @@ module Payload
 			return @data[key]
 		end
 
+		def _get_request()
+			return Payload::ARMRequest.new(self.class, @session)
+		end
+
+		def self._get_request()
+			return Payload::ARMRequest.new(self)
+		end
+
 		def self.select(*args, **data)
-			return Payload::ARMRequest.new(self).select(*args, **data)
+			return self._get_request().select(*args, **data)
 		end
 
 		def self.filter_by(*args, **data)
-			return Payload::ARMRequest.new(self).filter_by(*args, **data)
+			return self._get_request().filter_by(*args, **data)
 		end
 
 		def self.create(*args, **data)
 			if args.length != 0
-				return Payload::ARMRequest.new(self).create(args[0])
+				return self._get_request().create(args[0])
 			else
-				return Payload::ARMRequest.new(self).create(data)
+				return self._get_request().create(data)
 			end
 		end
 
 		def self.get(id)
-			return Payload::ARMRequest.new(self).get(id)
+			return self._get_request().get(id)
 		end
 
 		def self.delete(objects)
-			return Payload::ARMRequest.new(self).delete(objects)
+			return self._get_request().delete_all(objects)
 		end
 
 		def update(**update)
-			return Payload::ARMRequest.new(self.class)._request('Put', id: self.id, json: update)
+			return _get_request()._request('Put', id: self.id, json: update)
 		end
 
 		def delete()
-			return Payload::ARMRequest.new(self.class)._request('Delete', id: self.id)
+			return _get_request()._request('Delete', id: self.id)
 		end
 	end
 end
-

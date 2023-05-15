@@ -11,20 +11,24 @@ module Payload
             @api_url = api_url || Payload.URL
         end
 
-        def query(cls)
+        def _get_request(cls = nil)
             return Payload::ARMRequest.new(cls, self)
         end
 
-        def create(*args, **data)
-            return Payload::ARMRequest.new(session: self).create(*args, **data)
+        def query(cls)
+            return self._get_request(cls)
         end
 
-        def update(**update)
-            return Payload::ARMRequest.new(session: self)._request('Put', id: update.id, json: update)
+        def create(objects)
+            return self._get_request().create(objects)
         end
-
+    
+        def update(objects)
+            return self._get_request().update_all(objects)
+        end
+    
         def delete(objects)
-            return Payload::ARMRequest.new(session: self).delete(objects)
+            return self._get_request().delete_all(objects)
         end
 
         def ==(other)
@@ -33,6 +37,10 @@ module Payload
             # Compare the attributes for equality
             api_key == other.api_key &&
             api_url == other.api_url
-        end  
+        end
+
+        def to_s
+            "#{api_key} @ #{api_url}"
+        end
     end
 end
