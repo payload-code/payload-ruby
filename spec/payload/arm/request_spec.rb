@@ -1,5 +1,6 @@
 require "payload"
 require "payload/arm/object"
+require 'base64'
 
 
 RSpec.describe Payload::ARMRequest do
@@ -17,11 +18,16 @@ RSpec.describe Payload::ARMRequest do
             end
 
             it "builds the appropriate select request" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?fields=name%2Cage")
 
                     class MockResponse
@@ -34,7 +40,10 @@ RSpec.describe Payload::ARMRequest do
 
                         def body
                             '{
-                                "object": "customer"
+                                "object": "list",
+                                "values": [
+                                    {"id": "' + $test_id + '", "object": "customer"}
+                                ]
                             }'
                         end
                     end
@@ -42,7 +51,11 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
                 
-                instance.select('name', 'age').all()
+                custs = instance.select('name', 'age').all()
+
+                expect(custs.size).to eq(1)
+                expect(custs[0].object).to eq("customer")
+                expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
             end
         end
     end
@@ -63,11 +76,13 @@ RSpec.describe Payload::ARMRequest do
             end
 
             it "builds the appropriate filter_by request" do
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?name=John&age=30")
 
                     class MockResponse
@@ -93,7 +108,11 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
                 
-                instance.filter_by(name: "John", age: 30).all()
+                custs = instance.filter_by(name: "John", age: 30).all()
+
+                expect(custs.size).to eq(1)
+                expect(custs[0].object).to eq("customer")
+                expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
             end
         end
         
@@ -117,11 +136,16 @@ RSpec.describe Payload::ARMRequest do
 
         context "when the user creates an object" do
             it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
 
@@ -135,7 +159,7 @@ RSpec.describe Payload::ARMRequest do
 
                         def body
                             '{
-                                "id": "acct_123",
+                                "id": "' + $test_id + '",
                                 "object": "customer"
                             }'
                         end
@@ -145,7 +169,7 @@ RSpec.describe Payload::ARMRequest do
                 end
                 
                 cust = instance.create(name: "John", age: 30)
-                expect(cust.id).to eq("acct_123")
+                expect(cust.id).to eq($test_id)
                 expect(cust.object).to eq("customer")
                 expect(cust.session).to eq(instance.instance_variable_get(:@session))
             end
@@ -153,11 +177,18 @@ RSpec.describe Payload::ARMRequest do
 
         context "when the user creates multiple objects" do
             it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id_a = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_b = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_c = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
             
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Alice\",\"age\":25},{\"name\":\"Bob\",\"age\":35}]}")
             
@@ -173,9 +204,9 @@ RSpec.describe Payload::ARMRequest do
                             '{
                             "object": "list",
                             "values": [
-                                {"id": "acct_123", "object": "customer"},
-                                {"id": "acct_456", "object": "customer"},
-                                {"id": "acct_789", "object": "customer"}
+                                {"id": "' + $test_id_a + '", "object": "customer"},
+                                {"id": "' + $test_id_b + '", "object": "customer"},
+                                {"id": "' + $test_id_c + '", "object": "customer"}
                             ]
                             }'
                         end
@@ -187,15 +218,15 @@ RSpec.describe Payload::ARMRequest do
                 customers = instance.create([{ name: "John", age: 30 }, { name: "Alice", age: 25 }, { name: "Bob", age: 35 }])
                 expect(customers.size).to eq(3)
             
-                expect(customers[0].id).to eq("acct_123")
+                expect(customers[0].id).to eq($test_id_a)
                 expect(customers[0].object).to eq("customer")
                 expect(customers[0].session).to eq(instance.instance_variable_get(:@session))
             
-                expect(customers[1].id).to eq("acct_456")
+                expect(customers[1].id).to eq($test_id_b)
                 expect(customers[1].object).to eq("customer")
                 expect(customers[1].session).to eq(instance.instance_variable_get(:@session))
             
-                expect(customers[2].id).to eq("acct_789")
+                expect(customers[2].id).to eq($test_id_c)
                 expect(customers[2].object).to eq("customer")
                 expect(customers[2].session).to eq(instance.instance_variable_get(:@session))
             end
@@ -203,11 +234,18 @@ RSpec.describe Payload::ARMRequest do
         
         context "when the user creates multiple objects using ARMObjects" do
             it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id_a = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_b = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_c = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
             
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Alice\",\"age\":25},{\"name\":\"Bob\",\"age\":35}]}")
             
@@ -223,9 +261,9 @@ RSpec.describe Payload::ARMRequest do
                             '{
                                 "object": "list",
                                 "values": [
-                                    {"id": "acct_123", "object": "customer"},
-                                    {"id": "acct_456", "object": "customer"},
-                                    {"id": "acct_789", "object": "customer"}
+                                    {"id": "' + $test_id_a + '", "object": "customer"},
+                                    {"id": "' + $test_id_b + '", "object": "customer"},
+                                    {"id": "' + $test_id_c + '", "object": "customer"}
                                 ]
                             }'
                         end
@@ -237,15 +275,15 @@ RSpec.describe Payload::ARMRequest do
                 customers = instance.create([{ name: "John", age: 30 }, { name: "Alice", age: 25 }, { name: "Bob", age: 35 }])
                 expect(customers.size).to eq(3)
             
-                expect(customers[0].id).to eq("acct_123")
+                expect(customers[0].id).to eq($test_id_a)
                 expect(customers[0].object).to eq("customer")
                 expect(customers[0].session).to eq(instance.instance_variable_get(:@session))
             
-                expect(customers[1].id).to eq("acct_456")
+                expect(customers[1].id).to eq($test_id_b)
                 expect(customers[1].object).to eq("customer")
                 expect(customers[1].session).to eq(instance.instance_variable_get(:@session))
             
-                expect(customers[2].id).to eq("acct_789")
+                expect(customers[2].id).to eq($test_id_c)
                 expect(customers[2].object).to eq("customer")
                 expect(customers[2].session).to eq(instance.instance_variable_get(:@session))
             end
@@ -259,12 +297,17 @@ RSpec.describe Payload::ARMRequest do
         context "when the user gets an object" do
 
             it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
                     expect(http.address).to eq("api.payload.co")
-                    expect(request.path).to eq("/customers/acc_1234?")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers/" + $test_id + "?")
 
                     class MockResponse
                         def initialize
@@ -276,7 +319,7 @@ RSpec.describe Payload::ARMRequest do
 
                         def body
                             '{
-                                "id": "acct_123",
+                                "id": "' + $test_id + '",
                                 "object": "customer"
                             }'
                         end
@@ -285,8 +328,8 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
                 
-                cust = instance.get('acc_1234')
-                expect(cust.id).to eq("acct_123")
+                cust = instance.get($test_id)
+                expect(cust.id).to eq($test_id)
                 expect(cust.object).to eq("customer")
                 expect(cust.session).to eq(instance.instance_variable_get(:@session))
             end
@@ -300,12 +343,17 @@ RSpec.describe Payload::ARMRequest do
         context "when the user updates an object" do
 
             it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
                     expect(http.address).to eq("api.payload.co")
-                    expect(request.path).to eq("/customers/acct_123?")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers/" + $test_id + "?")
                     expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
 
                     class MockResponse
@@ -318,7 +366,7 @@ RSpec.describe Payload::ARMRequest do
 
                         def body
                             '{
-                                "id": "acct_123",
+                                "id": "' + $test_id + '",
                                 "object": "customer"
                             }'
                         end
@@ -327,23 +375,72 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
 
-                cust = Payload::Customer.new(id: 'acct_123').update(name: "John", age: 30)
-                expect(cust.id).to eq("acct_123")
+                cust = Payload::Customer.new(id: $test_id).update(name: "John", age: 30)
+                expect(cust.id).to eq($test_id)
                 expect(cust.object).to eq("customer")
                 expect(cust.session).to eq(instance.instance_variable_get(:@session))
+            end
+        end
+
+        context "when the user updates an object that is part of a session" do
+
+            it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+
+                cust = Payload::Customer.new({id: $test_id})
+                cust.set_session(instance)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("PUT")
+                    expect(http.address).to eq("sandbox.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('session_key')
+                    expect(request.path).to eq("/customers/" + $test_id + "?")
+                    expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "id": "' + $test_id + '",
+                                "object": "customer"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                cust.update(name: "John", age: 30)
             end
         end
 
         context "when the user updates multiple objects" do
 
             it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id_a = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_b = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_c = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
                 instance.instance_variable_set(:@cls, Payload::Customer)
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
                     expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
-                    expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30,\"id\":\"acct_123\"},{\"name\":\"Alice\",\"age\":25,\"id\":\"acct_456\"},{\"name\":\"Bob\",\"age\":35,\"id\":\"acct_789\"}]}")
+                    expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30,\"id\":\"" + $test_id_a + "\"},{\"name\":\"Alice\",\"age\":25,\"id\":\"" + $test_id_b + "\"},{\"name\":\"Bob\",\"age\":35,\"id\":\"" + $test_id_c + "\"}]}")
 
                     class MockResponse
                         def initialize
@@ -357,9 +454,9 @@ RSpec.describe Payload::ARMRequest do
                             '{
                                 "object": "list",
                                 "values": [
-                                    {"id": "acct_123", "object": "customer"},
-                                    {"id": "acct_456", "object": "customer"},
-                                    {"id": "acct_789", "object": "customer"}
+                                    {"id": "' + $test_id_a + '", "object": "customer"},
+                                    {"id": "' + $test_id_b + '", "object": "customer"},
+                                    {"id": "' + $test_id_c + '", "object": "customer"}
                                 ]
                             }'
                         end
@@ -369,29 +466,286 @@ RSpec.describe Payload::ARMRequest do
                 end
 
                 custs = Payload::update([
-                    [Payload::Customer.new(id: 'acct_123'), { name: "John", age: 30 }],
-                    [Payload::Customer.new(id: 'acct_456'), { name: "Alice", age: 25 }],
-                    [Payload::Customer.new(id: 'acct_789'), { name: "Bob", age: 35 }]
+                    [Payload::Customer.new(id: $test_id_a), { name: "John", age: 30 }],
+                    [Payload::Customer.new(id: $test_id_b), { name: "Alice", age: 25 }],
+                    [Payload::Customer.new(id: $test_id_c), { name: "Bob", age: 35 }]
                 ])
 
                 expect(custs.size).to eq(3)
 
-                expect(custs[0].id).to eq("acct_123")
+                expect(custs[0].id).to eq($test_id_a)
                 expect(custs[0].object).to eq("customer")
                 expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
 
-                expect(custs[1].id).to eq("acct_456")
+                expect(custs[1].id).to eq($test_id_b)
                 expect(custs[1].object).to eq("customer")
                 expect(custs[1].session).to eq(instance.instance_variable_get(:@session))
 
-                expect(custs[2].id).to eq("acct_789")
+                expect(custs[2].id).to eq($test_id_c)
+                expect(custs[2].object).to eq("customer")
+                expect(custs[2].session).to eq(instance.instance_variable_get(:@session))
+            end
+        end
+
+        context "when the user updates multiple objects via query" do
+
+            it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+                instance.instance_variable_set(:@cls, Payload::Customer)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("PUT")
+                    expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers?name=John+Smith&mode=query")
+                    expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "list",
+                                "values": [
+                                    {"id": "' + $test_id + '", "object": "customer"}
+                                ]
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                custs = Payload::Customer.
+                    filter_by(name: 'John Smith').
+                    update(name: "John", age: 30)
+
+                expect(custs.size).to eq(1)
+
+                expect(custs[0].id).to eq($test_id)
+                expect(custs[0].object).to eq("customer")
+                expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
+            end
+        end
+    end
+
+    describe "#delete" do
+
+        let(:instance) { described_class.new }
+
+        context "when the user deletes an object" do
+
+            it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("DELETE")
+                    expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers/" + $test_id + "?")
+                    expect(request.body).to eq(nil)
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "id": "' + $test_id + '",
+                                "object": "customer"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                cust = Payload::Customer.new(id: $test_id).delete()
+                expect(cust.id).to eq($test_id)
+                expect(cust.object).to eq("customer")
+                expect(cust.session).to eq(instance.instance_variable_get(:@session))
+            end
+        end
+
+        context "when the user updates an object that is part of a session" do
+
+            it "executes the appropriate request and returns the appropriate object" do
+
+                $test_id = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+
+                cust = Payload::Customer.new({id: $test_id})
+                cust.set_session(instance)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("DELETE")
+                    expect(http.address).to eq("sandbox.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('session_key')
+                    expect(request.path).to eq("/customers/" + $test_id + "?")
+                    expect(request.body).to eq(nil)
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "id": "' + $test_id + '",
+                                "object": "customer"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                cust.delete()
+            end
+        end
+
+        context "when the user deletes multiple objects" do
+
+            it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id_a = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_b = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_c = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+                instance.instance_variable_set(:@cls, Payload::Customer)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("DELETE")
+                    expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers?")
+                    expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"id\":\"" + $test_id_a + "\"},{\"id\":\"" + $test_id_b + "\"},{\"id\":\"" + $test_id_c + "\"}]}")
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "list",
+                                "values": [
+                                    {"id": "' + $test_id_a + '", "object": "customer"},
+                                    {"id": "' + $test_id_b + '", "object": "customer"},
+                                    {"id": "' + $test_id_c + '", "object": "customer"}
+                                ]
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                custs = Payload::delete([
+                    Payload::Customer.new(id: $test_id_a),
+                    Payload::Customer.new(id: $test_id_b),
+                    Payload::Customer.new(id: $test_id_c)
+                ])
+
+                expect(custs.size).to eq(3)
+
+                expect(custs[0].id).to eq($test_id_a)
+                expect(custs[0].object).to eq("customer")
+                expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
+
+                expect(custs[1].id).to eq($test_id_b)
+                expect(custs[1].object).to eq("customer")
+                expect(custs[1].session).to eq(instance.instance_variable_get(:@session))
+
+                expect(custs[2].id).to eq($test_id_c)
+                expect(custs[2].object).to eq("customer")
+                expect(custs[2].session).to eq(instance.instance_variable_get(:@session))
+            end
+        end
+
+        context "when the user deletes multiple objects via query" do
+
+            it "executes the appropriate request and returns the appropriate objects" do
+
+                $test_id_a = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_b = 'acct_' + rand(9000000...9999999).to_s
+                $test_id_c = 'acct_' + rand(9000000...9999999).to_s
+
+                Payload::api_key = 'test_key'
+                instance.instance_variable_set(:@cls, Payload::Customer)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("DELETE")
+                    expect(http.address).to eq("api.payload.co")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/customers?name=John+Smith&mode=query")
+                    expect(request.body).to eq(nil)
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "list",
+                                "values": [
+                                    {"id": "' + $test_id_a + '", "object": "customer"},
+                                    {"id": "' + $test_id_b + '", "object": "customer"},
+                                    {"id": "' + $test_id_c + '", "object": "customer"}
+                                ]
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                custs = Payload::Customer.
+                    filter_by(name: 'John Smith').
+                    delete()
+
+                expect(custs.size).to eq(3)
+
+                expect(custs[0].id).to eq($test_id_a)
+                expect(custs[0].object).to eq("customer")
+                expect(custs[0].session).to eq(instance.instance_variable_get(:@session))
+
+                expect(custs[1].id).to eq($test_id_b)
+                expect(custs[1].object).to eq("customer")
+                expect(custs[1].session).to eq(instance.instance_variable_get(:@session))
+
+                expect(custs[2].id).to eq($test_id_c)
                 expect(custs[2].object).to eq("customer")
                 expect(custs[2].session).to eq(instance.instance_variable_get(:@session))
             end
         end
     end
 end
-
-# TODO - test delete objects
-# TODO - test update objects via query
-# TODO - test delete objects via query
