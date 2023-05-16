@@ -110,5 +110,14 @@ module Payload
 		def delete()
 			return _get_request()._request('Delete', id: self.id)
 		end
+
+		def to_json(*args)
+			serialized = {}
+			if self.class.poly
+				serialized.merge!(self.class.poly)
+			end
+			serialized.merge!(@data)
+			return serialized.to_json(*args)
+		end
 	end
 end

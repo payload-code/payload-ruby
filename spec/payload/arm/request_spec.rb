@@ -147,7 +147,7 @@ RSpec.describe Payload::ARMRequest do
                     expect(http.address).to eq("api.payload.co")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
-                    expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
+                    expect(request.body).to eq("{\"type\":\"bill\",\"processing_id\":\"acct_3bz0zU99AX06SJwfMmfn0\",\"due_date\":\"2020-01-01\",\"items\":[{\"entry_type\":\"charge\",\"type\":\"item1\",\"amount\":29.99}],\"customer_id\":\"acct_3bW9JMoGYQul5fCIa9f8q\"}")
 
                     class MockResponse
                         def initialize
@@ -168,7 +168,18 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
                 
-                cust = instance.create(name: "John", age: 30)
+                cust = instance.create(
+                    type: 'bill',
+                    processing_id: 'acct_3bz0zU99AX06SJwfMmfn0',
+                    due_date: '2020-01-01',
+                    items: [
+                        Payload::ChargeItem.new(
+                            type: 'item1',
+                            amount: 29.99
+                        )
+                    ],
+                    customer_id: 'acct_3bW9JMoGYQul5fCIa9f8q'
+                )
                 expect(cust.id).to eq($test_id)
                 expect(cust.object).to eq("customer")
                 expect(cust.session).to eq(instance.instance_variable_get(:@session))
