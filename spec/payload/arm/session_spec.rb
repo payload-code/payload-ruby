@@ -7,7 +7,7 @@ RSpec.describe Payload::Session do
     describe "#initialize" do
         context "when the user initializes a session with only an API key" do
             let(:instance1) { described_class.new('test_key') }
-    
+
             it "sets the api key and uses default url" do
                 expect(instance1.api_key).to eq('test_key')
                 expect(instance1.api_url).to eq('https://api.payload.co')
@@ -16,7 +16,7 @@ RSpec.describe Payload::Session do
 
         context "when the user initializes a session with an API key and a URL" do
             let(:instance2) { described_class.new('test_key', 'https://api.hello.co') }
-    
+
             it "sets the api key and url" do
                 expect(instance2.api_key).to eq('test_key')
                 expect(instance2.api_url).to eq('https://api.hello.co')
@@ -65,8 +65,8 @@ RSpec.describe Payload::Session do
 
                     MockResponse.new
                 end
-                
-                expect(Payload::Customer.class_variable_get(:@@cache).key?(instance.to_s)).to eq(false)
+
+                expect(Payload::Customer.class_variable_get(:@@cache).key?(instance.object_id)).to eq(false)
 
                 custs = arm_request.select('name', 'age').all()
 
@@ -76,8 +76,8 @@ RSpec.describe Payload::Session do
                 expect(custs[0].object).to eq('customer')
                 expect(custs[0].session).to eq(instance)
 
-                expect(Payload::Customer.class_variable_get(:@@cache)[instance.to_s][$test_id]['name']).to eq('John Doe')
-                expect(Payload::Customer.class_variable_get(:@@cache)[instance.to_s][$test_id]['age']).to eq(42)
+                expect(Payload::Customer.class_variable_get(:@@cache)[instance.object_id][$test_id]['name']).to eq('John Doe')
+                expect(Payload::Customer.class_variable_get(:@@cache)[instance.object_id][$test_id]['age']).to eq(42)
             end
         end
     end
