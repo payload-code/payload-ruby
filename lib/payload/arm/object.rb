@@ -1,6 +1,37 @@
 require "payload/arm/request"
 
 module Payload
+	class ARMObjectWrapper
+		@cls
+		@session
+
+		def initialize(cls, session)
+			@cls = cls
+			@session = session
+		end
+
+		def new(data)
+			return @cls.new(data)
+		end
+
+		def all()
+			return @cls.all(:session => @session)
+		end
+
+		def filter_by(*args, **data)
+			return @cls.filter_by(*args, **data, :session => @session)
+		end
+
+		def create(*args, **data)
+			return @cls.create(*args, **data, :session => @session)
+		end
+
+		def get(id)
+			return @cls.get(id, :session => @session)
+		end
+
+	end
+
 	class ARMObject
 		@poly = nil
 		@data = nil
@@ -18,7 +49,7 @@ module Payload
 		def self.new(data, session = nil)
 
 			session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
-			session_key = session.to_s
+			session_key = session.object_id
 
 			if !@@cache.key?(session_key)
 				@@cache[session_key] = {}
@@ -75,8 +106,8 @@ module Payload
 			return Payload::ARMRequest.new(self.class, @session)
 		end
 
-		def self._get_request()
-			return Payload::ARMRequest.new(self)
+		def self._get_request(session=nil)
+			return Payload::ARMRequest.new(self, session)
 		end
 
 		def self.select(*args, **data)
@@ -84,23 +115,31 @@ module Payload
 		end
 
 		def self.filter_by(*args, **data)
-			return self._get_request().filter_by(*args, **data)
+			session = data[:session]
+			data.delete(:session)
+			return self._get_request(session).filter_by(*args, **data)
 		end
 
 		def self.create(*args, **data)
+			session = data[:session]
+			data.delete(:session)
 			if args.length != 0
-				return self._get_request().create(args[0])
+				return self._get_request(session).create(args[0])
 			else
-				return self._get_request().create(data)
+				return self._get_request(session).create(data)
 			end
 		end
 
-		def self.get(id)
-			return self._get_request().get(id)
+		def self.get(id, session: nil)
+			return self._get_request(session).get(id)
 		end
 
 		def self.delete(objects)
 			return self._get_request().delete_all(objects)
+		end
+
+		def self.all(session: nil)
+			return self._get_request(session).all()
 		end
 
 		def update(**update)

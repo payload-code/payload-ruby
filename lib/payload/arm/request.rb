@@ -16,7 +16,7 @@ module Payload
 
 		def select(*args, **data)
 			@filters['fields'] = args.map {|a| a.strip }.join(',')
-	
+
 			return self
 		end
 
@@ -186,9 +186,7 @@ module Payload
 						end
 					end
 				else
-					ret = Payload::get_cls(data).new(data)
-					ret.set_session(@session)
-					return ret
+					return Payload::get_cls(data).new(data, @session)
 				end
 			else
 				for error in Payload::subclasses(Payload::PayloadError)
