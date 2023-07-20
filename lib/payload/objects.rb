@@ -5,7 +5,7 @@ module Payload
 		@spec = { 'object' => 'account' }
 	end
 
-	class ClientKey < ARMObject
+	class ClientToken < ARMObject
 		@spec = { 'object' => 'access_token' }
 		@poly = { 'type' => 'client' }
 	end
@@ -14,7 +14,7 @@ module Payload
 		@spec = { 'object' => 'account' }
 	end
 
-	class Customer < ARMObject``
+	class Customer < ARMObject
 		@spec = { 'object' => 'customer' }
 	end
 
