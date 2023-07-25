@@ -1,6 +1,15 @@
 require "payload/arm/object"
 
 module Payload
+	class AccessToken < ARMObject
+		@spec = { 'object' => 'account' }
+	end
+
+	class ClientToken < ARMObject
+		@spec = { 'object' => 'access_token' }
+		@poly = { 'type' => 'client' }
+	end
+
 	class Account < ARMObject
 		@spec = { 'object' => 'account' }
 	end
