@@ -194,10 +194,10 @@ module Payload
 						next
 					end
 
-					raise error.new(data['description'], data)
+					raise error.new(data['error_description'], data)
 				end
 
-				raise Payload::BadRequest.new(data['description'], data)
+				raise Payload::BadRequest.new(data['error_description'], data)
 			end
 		end
 	end
