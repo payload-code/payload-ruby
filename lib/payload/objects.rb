@@ -10,6 +10,10 @@ module Payload
 		@poly = { 'type' => 'client' }
 	end
 
+	class OAuthToken < ARMObject
+		@spec = { 'object' => 'OAuthToken', 'endoint' => '/oauth/token' }
+	end
+
 	class Account < ARMObject
 		@spec = { 'object' => 'account' }
 	end
