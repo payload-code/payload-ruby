@@ -11,7 +11,7 @@ module Payload
 	end
 
 	class OAuthToken < ARMObject
-		@spec = { 'object' => 'OAuthToken', 'endoint' => '/oauth/token' }
+		@spec = { 'object' => 'oauth_token', 'endoint' => '/oauth/token' }
 	end
 
 	class Account < ARMObject
