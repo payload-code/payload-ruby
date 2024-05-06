@@ -26,7 +26,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?fields=name%2Cage")
 
@@ -81,7 +81,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?name=John&age=30")
 
@@ -144,7 +144,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"type\":\"bill\",\"processing_id\":\"acct_3bz0zU99AX06SJwfMmfn0\",\"due_date\":\"2020-01-01\",\"items\":[{\"entry_type\":\"charge\",\"type\":\"item1\",\"amount\":29.99}],\"customer_id\":\"acct_3bW9JMoGYQul5fCIa9f8q\"}")
@@ -198,7 +198,7 @@ RSpec.describe Payload::ARMRequest do
             
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Alice\",\"age\":25},{\"name\":\"Bob\",\"age\":35}]}")
@@ -255,7 +255,7 @@ RSpec.describe Payload::ARMRequest do
             
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("POST")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30},{\"name\":\"Alice\",\"age\":25},{\"name\":\"Bob\",\"age\":35}]}")
@@ -316,7 +316,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect(instance).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers/" + $test_id + "?")
 
@@ -362,7 +362,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers/" + $test_id + "?")
                     expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
@@ -400,14 +400,14 @@ RSpec.describe Payload::ARMRequest do
                 $test_id = 'acct_' + rand(9000000...9999999).to_s
 
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 cust = Payload::Customer.new({id: $test_id})
                 cust.set_session(instance)
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
-                    expect(http.address).to eq("sandbox.payload.co")
+                    expect(http.address).to eq("sandbox.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('session_key')
                     expect(request.path).to eq("/customers/" + $test_id + "?")
                     expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
@@ -448,7 +448,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"name\":\"John\",\"age\":30,\"id\":\"" + $test_id_a + "\"},{\"name\":\"Alice\",\"age\":25,\"id\":\"" + $test_id_b + "\"},{\"name\":\"Bob\",\"age\":35,\"id\":\"" + $test_id_c + "\"}]}")
@@ -509,7 +509,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("PUT")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?name=John+Smith&mode=query")
                     expect(request.body).to eq("{\"name\":\"John\",\"age\":30}")
@@ -562,7 +562,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("DELETE")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers/" + $test_id + "?")
                     expect(request.body).to eq(nil)
@@ -600,14 +600,14 @@ RSpec.describe Payload::ARMRequest do
                 $test_id = 'acct_' + rand(9000000...9999999).to_s
 
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 cust = Payload::Customer.new({id: $test_id})
                 cust.set_session(instance)
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("DELETE")
-                    expect(http.address).to eq("sandbox.payload.co")
+                    expect(http.address).to eq("sandbox.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('session_key')
                     expect(request.path).to eq("/customers/" + $test_id + "?")
                     expect(request.body).to eq(nil)
@@ -648,7 +648,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("DELETE")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?")
                     expect(request.body).to eq("{\"object\":\"list\",\"values\":[{\"id\":\"" + $test_id_a + "\"},{\"id\":\"" + $test_id_b + "\"},{\"id\":\"" + $test_id_c + "\"}]}")
@@ -711,7 +711,7 @@ RSpec.describe Payload::ARMRequest do
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
                     expect(request.method).to eq("DELETE")
-                    expect(http.address).to eq("api.payload.co")
+                    expect(http.address).to eq("api.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
                     expect(request.path).to eq("/customers?name=John+Smith&mode=query")
                     expect(request.body).to eq(nil)
