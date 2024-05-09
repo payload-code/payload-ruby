@@ -10,7 +10,7 @@ RSpec.describe Payload::Session do
 
             it "sets the api key and uses default url" do
                 expect(instance1.api_key).to eq('test_key')
-                expect(instance1.api_url).to eq('https://api.payload.co')
+                expect(instance1.api_url).to eq('https://api.payload.com')
             end
         end
 
@@ -32,7 +32,7 @@ RSpec.describe Payload::Session do
                 $test_id = 'acct_' + rand(9000000...9999999).to_s
 
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 arm_request = instance.query(Payload::Customer)
 
@@ -41,7 +41,7 @@ RSpec.describe Payload::Session do
 
                 expect(arm_request).to receive(:_execute_request) do |http, request|
                     expect(request.method).to eq("GET")
-                    expect(http.address).to eq("sandbox.payload.co")
+                    expect(http.address).to eq("sandbox.payload.com")
                     expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('session_key')
                     expect(request.path).to eq("/customers?fields=name%2Cage")
 
@@ -88,7 +88,7 @@ RSpec.describe Payload::Session do
 
             it "builds the appropriate ARMRequest" do
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 cust = Payload::Customer.new({})
 
@@ -108,7 +108,7 @@ RSpec.describe Payload::Session do
 
             it "builds the appropriate ARMRequest" do
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 cust = Payload::Customer.new({})
 
@@ -128,7 +128,7 @@ RSpec.describe Payload::Session do
 
             it "builds the appropriate ARMRequest" do
                 Payload::api_key = 'test_key'
-                instance = Payload::Session.new('session_key', 'https://sandbox.payload.co')
+                instance = Payload::Session.new('session_key', 'https://sandbox.payload.com')
 
                 cust = Payload::Customer.new({})
 

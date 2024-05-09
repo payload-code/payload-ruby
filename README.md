@@ -1,6 +1,6 @@
 # Payload RubyGem
 
-A RubyGem for integrating [Payload](https://payload.co).
+A RubyGem for integrating [Payload](https://payload.com).
 
 ## Installation
 
@@ -91,4 +91,4 @@ customers = Payload::Customer.filter_by(
 ## Documentation
 
 To get further information on Payload's RubyGem and API capabilities,
-visit the unabridged [Payload Documentation](https://docs.payload.co/?ruby).
+visit the unabridged [Payload Documentation](https://docs.payload.com/?ruby).

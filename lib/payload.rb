@@ -3,7 +3,7 @@ require "payload/objects"
 require "payload/arm/session"
 
 module Payload
-	@URL = "https://api.payload.co"
+	@URL = "https://api.payload.com"
 
 	class << self
 		def api_key=(value)
