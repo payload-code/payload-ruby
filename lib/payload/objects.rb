@@ -85,7 +85,7 @@ module Payload
 
 	class PaymentItem < ARMObject
 		@spec = { 'object' => 'line_item' }
-		@poly = { 'type' => 'payment' }
+		@poly = { 'entry_type' => 'payment' }
 	end
 
 	class PaymentActivation < ARMObject
