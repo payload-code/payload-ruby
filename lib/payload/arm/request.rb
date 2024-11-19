@@ -170,7 +170,7 @@ module Payload
 				if response.code == '500'
 					raise Payload::InternalError.new
 				else
-					raise Place::UnknownResponse.new
+					raise Payload::UnknownResponse.new
 				end
 			end
 
