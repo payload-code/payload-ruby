@@ -70,4 +70,6 @@ module Payload
 	def self.delete(objects)
 		return Payload::ARMRequest.new().delete_all(objects)
 	end
+
+	# TODO: Implement dynamic class selection for objects based on API version.
 end

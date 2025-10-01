@@ -13,7 +13,7 @@ gem 'payload-api', '~> 0.4.1'
 To install using gem:
 
 ```bash
-gem install payload-api - not sure if this is necessary
+gem install payload-api
 ```
 
 ## Get Started
