@@ -7,13 +7,13 @@ A RubyGem for integrating [Payload](https://payload.com).
 To install using [Bundler](https://bundler.io):
 
 ```ruby
-gem 'payload-api', '~> 0.2.4'
+gem 'payload-api', '~> 0.4.1'
 ```
 
 To install using gem:
 
 ```bash
-gem install payload
+gem install payload-api - not sure if this is necessary
 ```
 
 ## Get Started

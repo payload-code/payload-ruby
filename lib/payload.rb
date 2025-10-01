@@ -3,8 +3,12 @@ require "payload/objects"
 require "payload/arm/session"
 
 module Payload
-	@URL = "https://api.payload.com"
-
+	API_VERSIONS = [:v1, :v2].freeze
+	@URL_LOOKUP = {
+    v1: "https://api.payload.com",
+    v2: "https://api.payload.com/v2"
+  }.freeze
+	
 	class << self
 		def api_key=(value)
 			session.api_key = value
@@ -22,15 +26,37 @@ module Payload
 			session.api_url
 		end
 
+    def api_version=(version)
+      version = version.to_sym if version.respond_to?(:to_sym)
+      unless API_VERSIONS.include?(version)
+        raise ArgumentError, "Invalid API version: #{version}. Must be one of: #{API_VERSIONS.join(', ')}"
+      end
+      @api_version = version
+      # Reset session when version changes
+      @session = nil
+    end
+    
+    def api_version
+      @api_version ||= :v1
+    end
+    
+    def v1?
+      api_version == :v1
+    end
+    
+    def v2?
+      api_version == :v2
+    end
+
 		def URL
-			@URL
+			@URL_LOOKUP[@api_version]
 		end
 
 		private
 
-		def session
-			@session ||= Payload::Session.new(nil, @URL)
-		end
+    def session
+      @session ||= Payload::Session.new(nil, @URL_LOOKUP[@api_version])
+    end
 	end
 
 	def self.create(objects)
