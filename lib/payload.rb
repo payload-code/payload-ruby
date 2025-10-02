@@ -1,5 +1,7 @@
 require "payload/version"
-require "payload/objects"
+require "payload/core/objects"
+require "payload/v1/objects"
+require "payload/v2/objects"
 require "payload/arm/session"
 
 module Payload
@@ -71,5 +73,23 @@ module Payload
 		return Payload::ARMRequest.new().delete_all(objects)
 	end
 
-	# TODO: Implement dynamic class selection for objects based on API version.
+  def self.const_missing(const_name)
+    case api_version
+    when :v2
+      if const_defined?("V2::#{const_name}")
+        return const_get("V2::#{const_name}")
+      end
+    else
+      if const_defined?("V1::#{const_name}")
+        return const_get("V1::#{const_name}")
+      end
+    end
+    
+    # Fall back to Core version
+    if const_defined?(const_name)
+      return const_get(const_name)
+    end
+    
+    super
+  end
 end

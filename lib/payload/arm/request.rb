@@ -31,6 +31,7 @@ module Payload
 		end
 
 		def all()
+			# TODO: I don't think this applies the @poly variable as intended?
 			return self._request('Get')
 		end
 
@@ -145,7 +146,10 @@ module Payload
 				endpoint = File.join(endpoint, id)
 			end
 
-			url = URI.join(@session.api_url, endpoint)
+			api_url = @session.api_url.end_with?('/') ? @session.api_url : "#{@session.api_url}/"
+			endpoint = endpoint.start_with?('/') ? endpoint[1..-1] : endpoint
+			
+			url = URI.join(api_url, endpoint)
 			url.query = URI.encode_www_form(@filters)
 
 			http = Net::HTTP.new(url.host, url.port)

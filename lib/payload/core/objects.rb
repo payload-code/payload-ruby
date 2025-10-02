@@ -18,18 +18,6 @@ module Payload
 		@spec = { 'object' => 'account' }
 	end
 
-	class Customer < ARMObject
-		@spec = { 'object' => 'customer' }
-	end
-
-	class ProcessingAccount < ARMObject
-		@spec = { 'object' => 'processing_account' }
-	end
-
-	class Org < ARMObject
-		@spec = { 'object' => 'org', 'endpoint' => '/account/orgs' }
-	end
-
 	class Transaction < ARMObject
 		@spec = { 'object' => 'transaction' }
 	end
@@ -72,20 +60,6 @@ module Payload
 
 	class Invoice < ARMObject
 		@spec = { 'object' => 'invoice' }
-	end
-
-	class LineItem < ARMObject
-		@spec = { 'object' => 'line_item' }
-	end
-
-	class ChargeItem < ARMObject
-		@spec = { 'object' => 'line_item' }
-		@poly = { 'entry_type' => 'charge' }
-	end
-
-	class PaymentItem < ARMObject
-		@spec = { 'object' => 'line_item' }
-		@poly = { 'entry_type' => 'payment' }
 	end
 
 	class PaymentActivation < ARMObject
