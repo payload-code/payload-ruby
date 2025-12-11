@@ -3,23 +3,18 @@ require 'payload/arm/request'
 
 module Payload
     class Session
-        attr_accessor :api_key, :api_url
+        attr_accessor :api_key, :api_url, :api_version
 
-        def initialize(api_key, api_url=nil)
+        def initialize(api_key, api_url=nil, api_version=nil)
             @api_key = api_key
             @api_url = api_url || Payload.URL
+            @api_version = api_version || Payload.api_version
 
-            version_namespace = case Payload.api_version
-                                when :v2 then Payload::V2
-                                else Payload::V1
-                                end
 
-            [version_namespace, Payload].each do |namespace|
-                namespace.constants.each do |c|
-                    val = namespace.const_get(c)
-                    if val.is_a?(Class) && val < Payload::ARMObject
-                        define_singleton_method(c) { Payload::ARMObjectWrapper.new(val, self) }
-                    end
+            Payload.constants.each do |c|
+                val = Payload.const_get(c)
+                if val.is_a?(Class) && val < Payload::ARMObject
+                    define_singleton_method(c) { Payload::ARMObjectWrapper.new(val, self) }
                 end
             end
         end

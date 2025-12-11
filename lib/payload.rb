@@ -1,15 +1,9 @@
 require "payload/version"
-require "payload/core/objects"
-require "payload/v1/objects"
-require "payload/v2/objects"
+require "payload/objects"
 require "payload/arm/session"
 
 module Payload
-	API_VERSIONS = [:v1, :v2].freeze
-	@URL_LOOKUP = {
-    v1: "https://api.payload.com",
-    v2: "https://api.payload.com/v2"
-  }.freeze
+  @URL = "https://api.payload.com"
 	
 	class << self
 		def api_key=(value)
@@ -29,9 +23,8 @@ module Payload
 		end
 
     def api_version=(version)
-      version = version.to_sym if version.respond_to?(:to_sym)
-      unless API_VERSIONS.include?(version)
-        raise ArgumentError, "Invalid API version: #{version}. Must be one of: #{API_VERSIONS.join(', ')}"
+      unless version.to_s =~ /\A\d+(\.\d)?\z/
+        raise ArgumentError, "Version must be a number (as a string or numeric) with at most one optional decimal place, e.g. '1', '2.0', '1.5'"
       end
       @api_version = version
       # Reset session when version changes
@@ -39,25 +32,17 @@ module Payload
     end
     
     def api_version
-      @api_version ||= :v1
+      @api_version ||= 1
     end
     
-    def v1?
-      api_version == :v1
-    end
-    
-    def v2?
-      api_version == :v2
-    end
-
 		def URL
-			@URL_LOOKUP[@api_version]
+			@URL
 		end
 
 		private
 
     def session
-      @session ||= Payload::Session.new(nil, @URL_LOOKUP[@api_version])
+      @session ||= Payload::Session.new(nil, @URL)
     end
 	end
 
@@ -73,23 +58,4 @@ module Payload
 		return Payload::ARMRequest.new().delete_all(objects)
 	end
 
-  def self.const_missing(const_name)
-    case api_version
-    when :v2
-      if const_defined?("V2::#{const_name}")
-        return const_get("V2::#{const_name}")
-      end
-    else
-      if const_defined?("V1::#{const_name}")
-        return const_get("V1::#{const_name}")
-      end
-    end
-    
-    # Fall back to Core version
-    if const_defined?(const_name)
-      return const_get(const_name)
-    end
-    
-    super
-  end
 end
