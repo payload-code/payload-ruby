@@ -23,7 +23,7 @@ module Payload
 		end
 
     def api_version=(version)
-      unless version.to_s =~ /\A\d+(\.\d)?\z/
+      unless version.nil? || version.to_s =~ /\A\d+(\.\d)?\z/
         raise ArgumentError, "Version must be a number (as a string or numeric) with at most one optional decimal place, e.g. '1', '2.0', '1.5'"
       end
       @api_version = version
@@ -32,7 +32,7 @@ module Payload
     end
     
     def api_version
-      @api_version ||= 1
+      @api_version
     end
     
 		def URL

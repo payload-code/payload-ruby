@@ -759,4 +759,262 @@ RSpec.describe Payload::ARMRequest do
             end
         end
     end
+
+    describe "API version header functionality" do
+
+        # Mock object for testing
+        class MockObject < Payload::ARMObject
+            @spec = { 'object' => 'mock_object', 'endpoint' => '/mock' }
+        end
+
+        context "when session.api_version is set" do
+            it "includes X-API-Version header in GET requests" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', '2.1')
+                instance = Payload::ARMRequest.new(MockObject, session)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("GET")
+                    expect(request['X-API-Version']).to eq('2.1')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.get($test_id)
+            end
+        end
+
+        context "when session.api_version is nil" do
+            it "does not include X-API-Version header" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', nil)
+                instance = Payload::ARMRequest.new(MockObject, session)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("GET")
+                    expect(request['X-API-Version']).to be_nil
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.get($test_id)
+            end
+        end
+
+        context "when no session is provided" do
+            it "uses global Payload.api_version" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                # Set global api_version
+                original_version = Payload.api_version
+                Payload.api_version = '2.2'
+
+                # Create request without session (will use global Payload module)
+                instance = Payload::ARMRequest.new(MockObject, nil)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("GET")
+                    expect(request['X-API-Version']).to eq('2.2')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.get($test_id)
+
+                # Restore original version
+                Payload.api_version = original_version
+            end
+        end
+
+        context "when making POST requests" do
+            it "includes X-API-Version header" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', '2.3')
+                instance = Payload::ARMRequest.new(MockObject, session)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("POST")
+                    expect(request['X-API-Version']).to eq('2.3')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.create({ field: 'value' })
+            end
+        end
+
+        context "when making PUT requests" do
+            it "includes X-API-Version header" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', '2.4')
+                instance = Payload::ARMRequest.new(MockObject, session)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("PUT")
+                    expect(request['X-API-Version']).to eq('2.4')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.update(field: 'new_value')
+            end
+        end
+
+        context "when making DELETE requests" do
+            it "includes X-API-Version header" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', '2.5')
+
+                # Create mock object to delete
+                mock_obj = MockObject.new({ id: $test_id })
+                mock_obj.set_session(session)
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |inst, http, request|
+                    expect(request.method).to eq("DELETE")
+                    expect(request['X-API-Version']).to eq('2.5')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                mock_obj.delete
+            end
+        end
+
+        context "when custom headers are provided" do
+            it "merges X-API-Version header with existing headers" do
+                $test_id = 'mock_' + rand(9000000...9999999).to_s
+
+                session = Payload::Session.new('test_key', 'https://api.test.com', '2.6')
+                instance = Payload::ARMRequest.new(MockObject, session)
+
+                expect(instance).to receive(:_execute_request) do |http, request|
+                    expect(request.method).to eq("POST")
+                    # Verify both Content-Type and X-API-Version headers are present
+                    expect(request['Content-Type']).to eq('application/json')
+                    expect(request['X-API-Version']).to eq('2.6')
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "mock_object",
+                                "id": "' + $test_id + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                instance.create({ field: 'value' })
+            end
+        end
+    end
 end
