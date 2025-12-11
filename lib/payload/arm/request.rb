@@ -183,6 +183,7 @@ module Payload
 				if data['object'] == 'list'
 					return data['values'].map do |obj|
 						cls = Payload::get_cls(obj)
+						cls = @cls if cls.nil? && !@cls.nil?
 						if cls.nil?
 							obj
 						else
@@ -191,7 +192,13 @@ module Payload
 						end
 					end
 				else
-					return Payload::get_cls(data).new(data, @session)
+					cls = Payload::get_cls(data)
+					cls = @cls if cls.nil? && !@cls.nil?
+					if cls.nil?
+						return data
+					else
+						return cls.new(data, @session)
+					end
 				end
 			else
 				for error in Payload::subclasses(Payload::PayloadError)
