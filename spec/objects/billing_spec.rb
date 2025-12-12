@@ -27,12 +27,12 @@ RSpec.describe 'Billing Integration Tests' do
 
     it 'creates a billing schedule' do
       schedule = billing_schedule
-      expect(schedule.charges[0].amount).to eq(39.99)
+      expect(schedule.charges[0]['amount']).to eq(39.99)
     end
 
     it 'updates billing schedule frequency' do
       schedule = billing_schedule
-      expect(schedule.charges[0].amount).to eq(39.99)
+      expect(schedule.charges[0]['amount']).to eq(39.99)
 
       schedule.update(recurring_frequency: 'quarterly')
       expect(schedule.recurring_frequency).to eq('quarterly')

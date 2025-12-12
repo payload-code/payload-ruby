@@ -21,28 +21,33 @@ RSpec.describe 'Payment Method Integration Tests' do
       proc_account = create_processing_account
       rand_description = (0...10).map { ('a'..'z').to_a[rand(26)] }.join
 
-      card_payment = Payload::Payment.create(
-        amount: 100.0,
-        description: rand_description,
-        processing_id: proc_account.id,
-        payment_method: {
-          type: 'card',
-          card: {
-            card_number: '4242 4242 4242 4242',
-            expiry: '05/35',
-            card_code: '123',
-          },
-          billing_address: { postal_code: '11111' }
-        }
-      )
+      amounts = [90.0, 100.0, 110.0]
+      card_payments = []
+      amounts.each do |amount|
+        card_payment = Payload::Payment.create(
+          amount: amount,
+          description: rand_description,
+          processing_id: proc_account.id,
+          payment_method: {
+            type: 'card',
+            card: {
+              card_number: '4242 4242 4242 4242',
+              expiry: '05/35',
+              card_code: '123',
+            },
+            billing_address: { postal_code: '11111' }
+          }
+        )
+        card_payments << card_payment
+      end
 
       payments = Payload::Payment.filter_by(
-        amount: { '>' => 99, '<' => 200 },
+        amount: '100',
         description: rand_description
       ).all
 
-      expect(payments.length).to be >= 1
-      expect(payments.map(&:id)).to include(card_payment.id)
+      expect(payments.length).to be == 1
+      expect(payments.map(&:id)).to include(card_payments[1].id)
     end
 
     it 'voids a card payment' do
