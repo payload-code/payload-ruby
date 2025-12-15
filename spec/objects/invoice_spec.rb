@@ -38,7 +38,6 @@ RSpec.describe 'Invoice Integration Tests' do
           if session.api_version == 1
             amount = inv.amount_due
           else
-            puts "inv.totals: #{inv.totals.inspect}"
             amount = inv.totals['balance_due']
           end
 

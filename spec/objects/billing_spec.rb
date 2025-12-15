@@ -6,10 +6,11 @@ RSpec.describe 'Billing Integration Tests' do
   include_context 'test helpers'
 
   describe 'Billing Schedule' do
+    let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, 1) }
     let(:billing_schedule) do
-      proc_account = create_processing_account
-      customer_account = create_customer_account
-      Payload::BillingSchedule.create(
+      proc_account = create_processing_account(session)
+      customer_account = create_customer_account(session)
+      session.BillingSchedule.create(
         start_date: '2019-01-01',
         end_date: '2019-12-31',
         recurring_frequency: 'monthly',
@@ -43,7 +44,7 @@ RSpec.describe 'Billing Integration Tests' do
       schedule.delete
       
       expect {
-        Payload::BillingSchedule.get(schedule.id)
+        session.BillingSchedule.get(schedule.id)
       }.to raise_error(Payload::NotFound)
     end
   end
