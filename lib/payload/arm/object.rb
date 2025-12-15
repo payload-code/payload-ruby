@@ -158,5 +158,9 @@ module Payload
 			serialized.merge!(@data)
 			return serialized.to_json(*args)
 		end
+
+		def respond_to_missing?(name, include_private = false)
+			@data && @data.key?(name.to_s) || super
+		end
 	end
 end
