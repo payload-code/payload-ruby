@@ -29,6 +29,10 @@ module Payload
 		def get(id)
 			return @cls.get(id, :session => @session)
 		end
+		
+		def select(*args, **data)
+			@cls.select(*args, **data, session: @session)
+		end
 
 	end
 

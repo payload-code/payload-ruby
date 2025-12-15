@@ -7,66 +7,65 @@ RSpec.describe 'Invoice Integration Tests' do
   include_context 'test helpers'
 
   describe 'Invoice' do
-    let(:invoice) do
-      proc_account = create_processing_account
-      customer_account = create_customer_account
-      Payload::Invoice.create(
-        type: 'bill',
-        processing_id: proc_account.id,
-        due_date: Date.today.strftime('%Y-%m-%d'),
-        customer_id: customer_account.id,
-        items: [{amount: 29.99, entry_type: 'charge'}]
-      )
-    end
+    [1, 2]
+    .each do |api_version|
+      context "api_version=#{api_version}" do
+        let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, api_version) }
 
-    it 'creates an invoice' do
-      inv = invoice
-      expect(inv.due_date).to eq(Date.today.strftime('%Y-%m-%d'))
-      expect(inv.status).to eq('unpaid')
-    end
+        let(:proc_account)       { create_processing_account(session) }
+        let(:customer_account)   { create_customer_account(session) }
+        let(:invoice)            { create_invoice(proc_account, customer_account, session) }
 
-    it 'pays an invoice' do
-      inv = invoice
-      customer_account = create_customer_account
-      expect(inv.due_date).to eq(Date.today.strftime('%Y-%m-%d'))
-      expect(inv.status).to eq('unpaid')
+        it 'creates an invoice' do
+          inv = invoice
+          expect(inv.due_date).to eq(Date.today.strftime('%Y-%m-%d'))
+          expect(inv.status).to eq('unpaid')
+        end
 
-      # card_payment = Payload::Card.create(
-      #   account_id: customer_account.id,
-      #   card_number: '4242 4242 4242 4242',
-      #   expiry: '12/35',
-      #   card_code: '123',
-      #   billing_address: { postal_code: '11111' }
-      # )
+        it 'pays an invoice' do
+          inv = invoice
+          expect(inv.due_date).to eq(Date.today.strftime('%Y-%m-%d'))
+          expect(inv.status).to eq('unpaid')
 
-      if inv.status != 'paid'
-        Payload::Payment.create(
-          amount: inv.amount_due,
-          customer_id: customer_account.id,
-          payment_method: {
-            type: 'card',
-            card: {
-              card_number: '4242 4242 4242 4242',
-              expiry: '12/35',
-              card_code: '123',
-            },
-            billing_address: { postal_code: '11111' }
-          },
-          allocations: [{entry_type: 'payment', invoice_id: inv.id}]
-        )
+          # card_payment = Payload::Card.create(
+          #   account_id: customer_account.id,
+          #   card_number: '4242 4242 4242 4242',
+          #   expiry: '12/35',
+          #   card_code: '123',
+          #   billing_address: { postal_code: '11111' }
+          # )
+          
+          if session.api_version == 1
+            amount = inv.amount_due
+          else
+            puts "inv.totals: #{inv.totals.inspect}"
+            amount = inv.totals['balance_due']
+          end
+
+          if inv.status != 'paid'
+            create_card_payment(
+              proc_account.id, 
+              session, 
+              amount: amount, 
+              description: 'Test Payment', 
+              customer_id: customer_account.id, 
+              invoice_id: inv.id
+            )
+          end
+
+          get_invoice = session.Invoice.get(inv.id)
+          expect(get_invoice.status).to eq('paid')
+        end
+
+        it 'deletes an invoice' do
+          inv = invoice
+          inv.delete
+          
+          expect {
+            session.Invoice.get(inv.id)
+          }.to raise_error(Payload::NotFound)
+        end
       end
-
-      get_invoice = Payload::Invoice.get(inv.id)
-      expect(get_invoice.status).to eq('paid')
-    end
-
-    it 'deletes an invoice' do
-      inv = invoice
-      inv.delete
-      
-      expect {
-        Payload::Invoice.get(inv.id)
-      }.to raise_error(Payload::NotFound)
     end
   end
 end

@@ -9,8 +9,12 @@ RSpec.shared_context 'test helpers' do
     end
   end
 
-  def create_customer_account(session)
-    session.Customer.create(name: 'Test', email: 'test@example.com')
+  def create_customer_account(session, name: 'Test', email: 'test@example.com')
+    if session.api_version == 2
+      create_customer_account_v2(session, name: name, email: email)
+    else
+      create_customer_account_v1(session, name: name, email: email)
+    end
   end
 
   def create_processing_account(session)
@@ -21,29 +25,43 @@ RSpec.shared_context 'test helpers' do
     end
   end
 
-  def create_card_payment(processing_account, session, amount: nil, description: nil)
+  def create_card_payment(processing_id, session, amount: nil, description: nil, customer_id: nil, invoice_id: nil)
     if session.api_version == 2
-      session.Transaction.create(
+      sender = {
+        method: session.PaymentMethod.new(
+          type: 'card',
+          card: {
+            card_number: '4242 4242 4242 4242',
+              expiry: '12/35',
+              card_code: '123',
+            },
+          billing_address: {
+            postal_code: '11111'
+          }
+        )
+      }
+      if customer_id
+        sender = sender.merge({
+          account_id: customer_id,
+        })
+      end
+      payment = {
         type: 'payment',
         amount: amount || rand * 100,
         description: description || 'Test Payment',
-        sender: {
-          method: session.PaymentMethod.new(
-            type: 'card',
-            card: {
-              card_number: '4242 4242 4242 4242',
-                expiry: '12/35',
-                card_code: '123',
-              },
-            billing_address: {
-              postal_code: '11111'
-            }
-          )
-        }
+        sender: sender,
+      }
+      if invoice_id
+        payment = payment.merge({
+          invoice_allocations: [{invoice_id: invoice_id}]
+        })
+      end
+      session.Transaction.create(
+        payment
       )
     else  
-      session.Payment.create(
-        processing_id: processing_account.id,
+      payment = {
+        processing_id: processing_id,
         amount: amount || rand * 100,
         description: description || 'Test Payment',
         payment_method: session.PaymentMethod.new(
@@ -57,6 +75,19 @@ RSpec.shared_context 'test helpers' do
             postal_code: '11111'
           }
         )
+      }
+      if invoice_id
+        payment = payment.merge({
+          allocations: [{invoice_id: invoice_id}]
+        })
+      end
+      if customer_id
+        payment = payment.merge({
+          customer_id: customer_id
+        })
+      end
+      session.Payment.create(
+        payment
       )
     end
   end
@@ -88,13 +119,11 @@ RSpec.shared_context 'test helpers' do
   end
 
   def create_invoice(processing_account, customer_account, session)
-    session.Invoice.create(
-      type: 'bill',
-      processing_id: processing_account.id,
-      due_date: Date.today.strftime('%Y-%m-%d'),
-      customer_id: customer_account.id,
-      items: [session.ChargeItem.new(amount: 29.99)]
-    )
+    if session.api_version == 2
+      create_invoice_v2(processing_account, customer_account, session)
+    else
+      create_invoice_v1(processing_account, customer_account, session)
+    end
   end
 
   def create_blind_refund(session, amount, processing_id)
@@ -320,6 +349,49 @@ RSpec.shared_context 'test helpers' do
           card_code: '123'
         },
         billing_address: { postal_code: '11111' }
+      }
+    )
+  end
+
+  def create_invoice_v1(processing_account, customer_account, session)
+    session.Invoice.create(
+      processing_id: processing_account.id,
+      due_date: Date.today.strftime('%Y-%m-%d'),
+      customer_id: customer_account.id,
+      items: [session.ChargeItem.new(amount: 29.99)]
+    )
+  end
+
+  def create_invoice_v2(processing_account, customer_account, session)
+    session.Invoice.create(
+      due_date: Date.today.strftime('%Y-%m-%d'),
+      biller: {
+        account_id: processing_account.id,
+      },
+      payer: {
+        account_id: customer_account.id,
+      },
+      items: [
+        {
+          type: 'line_item',
+          line_item: {
+            value: 29.99,
+          }
+        }
+      ],
+    )
+  end
+
+  def create_customer_account_v1(session, name: 'Test', email: 'test@example.com')
+    session.Customer.create(name: name, email: email)
+  end
+
+  def create_customer_account_v2(session, name: 'Test', email: 'test@example.com')
+    session.Account.create(
+      type: 'customer',
+      name: name,
+      contact_details: {
+        email: email
       }
     )
   end

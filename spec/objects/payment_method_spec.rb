@@ -13,7 +13,7 @@ RSpec.describe 'Payment Method Integration Tests' do
   
         it 'creates a payment with card' do
           proc_account = create_processing_account(session)
-          card_payment = create_card_payment(proc_account, session)
+          card_payment = create_card_payment(proc_account.id, session)
           status = api_version == 1 ? card_payment.status : card_payment.status['value']
           expect(status).to eq('processed')
         end
@@ -29,7 +29,7 @@ RSpec.describe 'Payment Method Integration Tests' do
           amounts = [90.0, 100.0, 110.0]
           card_payments = []
           amounts.each do |amount|
-            card_payment = create_card_payment(proc_account, session, amount: amount, description: rand_description)
+            card_payment = create_card_payment(proc_account.id, session, amount: amount, description: rand_description)
             card_payments << card_payment
           end
     
@@ -45,7 +45,7 @@ RSpec.describe 'Payment Method Integration Tests' do
     
         it 'voids a card payment' do
           proc_account = create_processing_account(session)
-          card_payment = create_card_payment(proc_account, session)
+          card_payment = create_card_payment(proc_account.id, session)
           card_payment.update(status: 'voided') if api_version == 1
           card_payment.update(status: { value: 'voided' }) if api_version == 2
           status = api_version == 1 ? card_payment.status : card_payment.status['value']
@@ -62,7 +62,7 @@ RSpec.describe 'Payment Method Integration Tests' do
     
         it 'refunds a card payment' do
           proc_account = create_processing_account(session)
-          card_payment = create_card_payment(proc_account, session)
+          card_payment = create_card_payment(proc_account.id, session)
           refund = create_refund(session, card_payment)
     
           expect(refund.type).to eq('refund')
@@ -71,7 +71,7 @@ RSpec.describe 'Payment Method Integration Tests' do
     
         it 'partially refunds a card payment' do
           proc_account = create_processing_account(session)
-          card_payment = create_card_payment(proc_account, session)
+          card_payment = create_card_payment(proc_account.id, session)
           amount = (card_payment.amount/2).round(2) # rounded to 2 decimal places
           refund = create_refund(session, card_payment, amount: amount)
     
