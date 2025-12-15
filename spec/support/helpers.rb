@@ -51,14 +51,14 @@ RSpec.shared_context 'test helpers' do
           }
         ]
       },
-      payment_methods: {
+      payment_methods: [Payload::PaymentMethod.new(
         type: 'bank_account',
         bank_account: {
           account_number: '123456789',
           routing_number: '036001808',
           account_type: 'checking'
         }
-      }
+      )]
     )
   end
 
@@ -66,7 +66,7 @@ RSpec.shared_context 'test helpers' do
     Payload::Payment.create(
       processing_id: processing_account.id,
       amount: rand * 100,
-      payment_method: {
+      payment_method: Payload::PaymentMethod.new(
         type: 'card',
         card: {
           card_number: '4242 4242 4242 4242',
@@ -76,7 +76,7 @@ RSpec.shared_context 'test helpers' do
         billing_address: { 
           postal_code: '11111'
         }
-      }
+      )
     )
   end
 
@@ -84,7 +84,7 @@ RSpec.shared_context 'test helpers' do
     Payload::Payment.create(
       type: 'payment',
       amount: rand * 1000,
-      payment_method: {
+      payment_method: Payload::PaymentMethod.new(
         type: 'bank_account',
         account_holder: 'First Last',
         bank_account: {
@@ -95,7 +95,7 @@ RSpec.shared_context 'test helpers' do
         billing_address: { 
           postal_code: '11111'
         }
-      }
+      )
     )
   end
 
