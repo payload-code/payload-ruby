@@ -56,6 +56,13 @@ RSpec.shared_context 'test helpers' do
           invoice_allocations: [{invoice_id: invoice_id}]
         })
       end
+      if processing_id
+        payment = payment.merge({
+          receiver: {
+            account_id: processing_id,
+          }
+        })
+      end
       session.Transaction.create(
         payment
       )
@@ -200,7 +207,11 @@ RSpec.shared_context 'test helpers' do
   end
 
   def create_processing_account_v2(session)
-    org = session.Profile.all()[0]
+    orgs = session.Profile.all()
+    puts 'orgs: ' + orgs.inspect
+    puts 'orgs.length: ' + orgs.length.inspect
+    puts 'orgs[0]: ' + orgs[0].inspect
+    org = orgs[0]
     session.Account.create(
       type: 'processing',
       name: 'Processing Account',
