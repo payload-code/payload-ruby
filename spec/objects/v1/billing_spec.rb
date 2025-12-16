@@ -1,15 +1,17 @@
 require 'payload'
 require 'payload/arm/object'
-require_relative '../support/helpers'
+require_relative '../../support/helpers'
 
-RSpec.describe 'Billing Integration Tests' do
+RSpec.describe 'Billing Integration Tests - V1' do
   include_context 'test helpers'
 
+  let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, 1) }
+  let(:h) { V1Helpers.new(session) }
+
   describe 'Billing Schedule' do
-    let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, 1) }
     let(:billing_schedule) do
-      proc_account = create_processing_account(session)
-      customer_account = create_customer_account(session)
+      proc_account = h.create_processing_account
+      customer_account = h.create_customer_account
       session.BillingSchedule.create(
         start_date: '2019-01-01',
         end_date: '2019-12-31',

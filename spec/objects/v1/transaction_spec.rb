@@ -1,22 +1,24 @@
 require 'payload'
 require 'payload/arm/object'
-require_relative '../support/helpers'
+require_relative '../../support/helpers'
 
-RSpec.describe 'Transaction Integration Tests' do
+RSpec.describe 'Transaction Integration Tests - V1' do
   include_context 'test helpers'
 
+  let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, 1) }
+  let(:h) { V1Helpers.new(session) }
+  let(:proc_account) { h.create_processing_account }
+
   describe 'Transactions' do
-    let(:session) { Payload::Session.new(Payload.api_key, Payload.api_url, 1) }
+
     it 'has empty transaction ledger' do
-      proc_account = create_processing_account(session)
-      card_payment = create_card_payment(proc_account.id, session)
+      card_payment = h.create_card_payment(proc_account.id)
       transaction = session.Transaction.select('*', 'ledger').get(card_payment.id)
       expect(transaction.ledger).to eq([])
     end
 
     it 'tests unified payout batching' do
-      proc_account = create_processing_account(session)
-      create_blind_refund(session, 10, proc_account.id)
+      h.create_blind_refund(10, proc_account.id)
 
       transactions = session.Transaction.select('*', 'ledger')
         .filter_by(type: 'refund', processing_id: proc_account.id)
@@ -27,21 +29,18 @@ RSpec.describe 'Transaction Integration Tests' do
     end
 
     it 'gets transactions' do
-      proc_account = create_processing_account(session)
-      create_card_payment(proc_account.id, session)
+      h.create_card_payment(proc_account.id)
       payments = session.Transaction.filter_by(status: 'processed', type: 'payment').all
       expect(payments.length).to be > 0
     end
 
     it 'checks risk flag' do
-      proc_account = create_processing_account(session)
-      card_payment = create_card_payment(proc_account.id, session)
+      card_payment = h.create_card_payment(proc_account.id)
       expect(card_payment.risk_flag).to eq('allowed')
     end
 
     it 'updates processed transaction' do
-      proc_account = create_processing_account(session)
-      card_payment = create_card_payment(proc_account.id, session)
+      card_payment = h.create_card_payment(proc_account.id)
       card_payment.update(status: 'voided')
       expect(card_payment.status).to eq('voided')
     end
