@@ -150,4 +150,8 @@ module Payload
 		@spec = { 'object' => 'check_back' }
 	end
 
+	class ProcessingRule < ARMObject
+		@spec = { 'object' => 'processing_rule' }
+	end
+
 end
