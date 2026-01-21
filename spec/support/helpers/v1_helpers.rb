@@ -124,7 +124,7 @@ class V1Helpers
         type: 'card',
         card: {
           card_number: '4242 4242 4242 4242',
-          expiry: '12/25',
+          expiry: '12/30',
           card_code: '123'
         },
         billing_address: { postal_code: '11111' }

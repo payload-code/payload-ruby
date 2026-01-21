@@ -98,7 +98,7 @@ RSpec.describe 'Payment Method Integration Tests - V2' do
         session.Transaction.create(
           type: 'invalid',
           card_number: '4242 4242 4242 4242',
-          expiry: '12/25'
+          expiry: '12/30'
         )
       }.to raise_error(Payload::InvalidAttributes)
     end

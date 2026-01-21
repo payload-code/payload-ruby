@@ -60,7 +60,6 @@ class V2Helpers
           },
           primary_contact: {
             name:  'John Smith',
-            title: 'CEO',
             email: 'johnsmith@gmail.com',
           },
           stakeholders: [
@@ -69,7 +68,6 @@ class V2Helpers
               personal_information: {
                 full_name:    'John Smith',
                 email:        'johnsmith@gmail.com',
-                title:        'CEO',
                 birth_date:   '1990-05-10',
                 phone_number: '123 123-1234',
               },
@@ -82,9 +80,13 @@ class V2Helpers
               govt_id: {
                 tax_id: { value: '123 12 1234' },
               },
-              ownership: {
-                percentage:  100,
-                years_owned: 5,
+              association: {
+                ownership: {
+                  percentage:  100,
+                  years_owned: 5,
+                },
+                roles: ['principal_officer'],
+                title: 'CEO',
               },
             },
           ],
@@ -185,7 +187,7 @@ class V2Helpers
           type: 'card',
           card: {
             card_number: '4242 4242 4242 4242',
-            expiry: '12/25',
+            expiry: '12/30',
             card_code: '123'
           },
           billing_address: { postal_code: '11111' }

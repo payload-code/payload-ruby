@@ -100,7 +100,6 @@ RSpec.describe 'Account Integration Tests - V2' do
             },
             primary_contact: {
               name:  'John Smith',
-              title: 'CEO',
               email: 'johnsmith@gmail.com',
             },
             stakeholders: [
@@ -122,9 +121,13 @@ RSpec.describe 'Account Integration Tests - V2' do
                 govt_id: {
                   tax_id: { value: '123 12 1234' },
                 },
-                ownership: {
-                  percentage:  100,
-                  years_owned: 5,
+                association: {
+                  roles: ['principal_officer'],
+                  title: 'CEO',
+                  ownership: {
+                    percentage:  100,
+                    years_owned: 5,
+                  },
                 },
               },
             ],
