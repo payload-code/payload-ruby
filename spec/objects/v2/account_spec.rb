@@ -108,7 +108,6 @@ RSpec.describe 'Account Integration Tests - V2' do
                 personal_information: {
                   full_name:    'John Smith',
                   email:        'johnsmith@gmail.com',
-                  title:        'CEO',
                   birth_date:   '1990-05-10',
                   phone_number: '123 123-1234',
                 },
