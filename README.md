@@ -34,15 +34,26 @@ require 'payload'
 Payload.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
 ```
 
-### Setting the API version
+### API Versioning
 
-In order to toggle between v1 and v2 API versions, you'll need to pass in a
-value for the version when instantiating the session.
+The Payload API supports multiple versions. You can specify which version to use when making requests:
 
 ```ruby
-session = Payload::Session.new(Payload.api_key, Payload.api_url, 'v2')
-accounts = session.Account.all()
+require 'payload'
+Payload.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
+Payload.api_version = 'v2'  # Use API v2
 ```
+
+Or with sessions:
+
+```ruby
+pl = Payload::Session.new(
+    'secret_key_3bW9JMZtPVDOfFNzwRdfE', 
+    api_version: 'v2'
+)
+```
+
+API v2 introduces new objects including `Profile`, `Intent`, `Entity`, `Transfer`, `ProcessingAgreement`, and more. See the [Payload API Documentation](https://docs.payload.com) for details on API versions.
 
 ### Creating an Object
 

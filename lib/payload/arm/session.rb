@@ -5,12 +5,11 @@ module Payload
     class Session
         attr_accessor :api_key, :api_url, :api_version
 
-        def initialize(api_key, api_url=nil, api_version=nil)
-            @api_key = api_key
-            @api_url = api_url || Payload.URL
-            @api_version = api_version || Payload.api_version
-
-
+        def initialize(api_key = nil, api_url = nil, api_version = nil, **kwargs)
+            @api_key = kwargs[:api_key] || api_key
+            @api_url = kwargs[:api_url] || api_url || Payload.URL
+            @api_version = kwargs[:api_version] || api_version || Payload.api_version
+        
             Payload.constants.each do |c|
                 val = Payload.const_get(c)
                 if val.is_a?(Class) && val < Payload::ARMObject
