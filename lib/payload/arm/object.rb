@@ -29,6 +29,10 @@ module Payload
 		def get(id)
 			return @cls.get(id, :session => @session)
 		end
+		
+		def select(*args, **data)
+			@cls.select(*args, **data, session: @session)
+		end
 
 	end
 
@@ -157,6 +161,10 @@ module Payload
 			end
 			serialized.merge!(@data)
 			return serialized.to_json(*args)
+		end
+
+		def respond_to_missing?(name, include_private = false)
+			@data && @data.key?(name.to_s) || super
 		end
 	end
 end

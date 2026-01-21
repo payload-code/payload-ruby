@@ -18,18 +18,6 @@ module Payload
 		@spec = { 'object' => 'account' }
 	end
 
-	class Customer < ARMObject
-		@spec = { 'object' => 'customer' }
-	end
-
-	class ProcessingAccount < ARMObject
-		@spec = { 'object' => 'processing_account' }
-	end
-
-	class Org < ARMObject
-		@spec = { 'object' => 'org', 'endpoint' => '/account/orgs' }
-	end
-
 	class Transaction < ARMObject
 		@spec = { 'object' => 'transaction' }
 	end
@@ -74,6 +62,19 @@ module Payload
 		@spec = { 'object' => 'invoice' }
 	end
 
+	class PaymentActivation < ARMObject
+		@spec = { 'object' => 'payment_activation' }
+	end
+
+	class Webhook < ARMObject
+		@spec = { 'object' => 'webhook' }
+	end
+
+	class PaymentLink < ARMObject
+		@spec = { 'object' => 'payment_link' }
+	end
+
+	# V1 objects
 	class LineItem < ARMObject
 		@spec = { 'object' => 'line_item' }
 	end
@@ -88,15 +89,69 @@ module Payload
 		@poly = { 'entry_type' => 'payment' }
 	end
 
-	class PaymentActivation < ARMObject
-		@spec = { 'object' => 'payment_activation' }
+	class Customer < ARMObject
+		@spec = { 'object' => 'customer' }
 	end
 
-	class Webhook < ARMObject
-		@spec = { 'object' => 'webhook' }
+	class ProcessingAccount < ARMObject
+		@spec = { 'object' => 'processing_account' }
+	end
+	
+	class Org < ARMObject
+		@spec = { 'object' => 'org', 'endpoint' => '/account/orgs' }
 	end
 
-	class PaymentLink < ARMObject
-		@spec = { 'object' => 'payment_link' }
+	# V2 objects
+	class InvoiceItem < ARMObject
+		@spec = { 'object' => 'invoice_item' }
 	end
+
+	class PaymentAllocation < ARMObject
+		@spec = { 'object' => 'payment_allocation' }
+	end
+
+	class Profile < ARMObject
+		@spec = { 'object' => 'profile' }
+	end
+
+	class BillingItem < ARMObject
+		@spec = { 'object' => 'billing_item' }
+	end
+
+	class Intent < ARMObject
+		@spec = { 'object' => 'intent' }
+	end
+
+	class Entity < ARMObject
+		@spec = { 'object' => 'entity' }
+	end
+
+	class Stakeholder < ARMObject
+		@spec = { 'object' => 'stakeholder' }
+	end
+
+	class ProcessingAgreement < ARMObject
+		@spec = { 'object' => 'processing_agreement' }
+	end
+
+	class Transfer < ARMObject
+		@spec = { 'object' => 'transfer' }
+	end
+
+	class TransactionOperation < ARMObject
+		@spec = { 'object' => 'transaction_operation' }
+	end
+
+	class CheckFront < ARMObject
+		@spec = { 'object' => 'check_front' }
+	end
+
+	class CheckBack < ARMObject
+		@spec = { 'object' => 'check_back' }
+	end
+
+	class ProcessingRule < ARMObject
+		@spec = { 'object' => 'processing_rule' }
+	end
+
 end

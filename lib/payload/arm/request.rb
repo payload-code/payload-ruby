@@ -31,6 +31,7 @@ module Payload
 		end
 
 		def all()
+			# TODO: I don't think this applies the @poly variable as intended?
 			return self._request('Get')
 		end
 
@@ -162,6 +163,10 @@ module Payload
 				request.add_field('Content-Type', 'application/json')
 			end
 
+			if @session.api_version
+				request.add_field('X-API-Version', @session.api_version)
+			end
+
 			response = self._execute_request(http, request)
 
 			begin
@@ -178,6 +183,7 @@ module Payload
 				if data['object'] == 'list'
 					return data['values'].map do |obj|
 						cls = Payload::get_cls(obj)
+						cls = @cls if cls.nil? && !@cls.nil?
 						if cls.nil?
 							obj
 						else
@@ -186,7 +192,13 @@ module Payload
 						end
 					end
 				else
-					return Payload::get_cls(data).new(data, @session)
+					cls = Payload::get_cls(data)
+					cls = @cls if cls.nil? && !@cls.nil?
+					if cls.nil?
+						return data
+					else
+						return cls.new(data, @session)
+					end
 				end
 			else
 				for error in Payload::subclasses(Payload::PayloadError)

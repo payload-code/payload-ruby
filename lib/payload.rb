@@ -3,8 +3,8 @@ require "payload/objects"
 require "payload/arm/session"
 
 module Payload
-	@URL = "https://api.payload.com"
-
+  @URL = "https://api.payload.com"
+	
 	class << self
 		def api_key=(value)
 			session.api_key = value
@@ -22,15 +22,24 @@ module Payload
 			session.api_url
 		end
 
+    def api_version=(version)
+      @api_version = version
+      @session = nil
+    end
+    
+    def api_version
+      @api_version
+    end
+    
 		def URL
 			@URL
 		end
 
 		private
 
-		def session
-			@session ||= Payload::Session.new(nil, @URL)
-		end
+    def session
+      @session ||= Payload::Session.new(nil, @URL)
+    end
 	end
 
 	def self.create(objects)
@@ -44,4 +53,5 @@ module Payload
 	def self.delete(objects)
 		return Payload::ARMRequest.new().delete_all(objects)
 	end
+
 end

@@ -20,6 +20,8 @@ jobs:
         ruby-version: 3.0.1
 
     - name: Run RSpec tests
+      env:
+        TEST_SECRET_KEY: ${{ secrets.API_KEY }}
       run: |
         gem install rspec
         rspec spec

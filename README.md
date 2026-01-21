@@ -7,13 +7,13 @@ A RubyGem for integrating [Payload](https://payload.com).
 To install using [Bundler](https://bundler.io):
 
 ```ruby
-gem 'payload-api', '~> 0.2.4'
+gem 'payload-api', '~> 0.5.0'
 ```
 
 To install using gem:
 
 ```bash
-gem install payload
+gem install payload-api
 ```
 
 ## Get Started
@@ -33,6 +33,27 @@ keys are accessible from within the Payload dashboard.
 require 'payload'
 Payload.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
 ```
+
+### API Versioning
+
+The Payload API supports multiple versions. You can specify which version to use when making requests:
+
+```ruby
+require 'payload'
+Payload.api_key = 'secret_key_3bW9JMZtPVDOfFNzwRdfE'
+Payload.api_version = 'v2'  # Use API v2
+```
+
+Or with sessions:
+
+```ruby
+pl = Payload::Session.new(
+    'secret_key_3bW9JMZtPVDOfFNzwRdfE', 
+    api_version: 'v2'
+)
+```
+
+API v2 introduces new objects including `Profile`, `Intent`, `Entity`, `Transfer`, `ProcessingAgreement`, and more. See the [Payload API Documentation](https://docs.payload.com) for details on API versions.
 
 ### Creating an Object
 

@@ -1,7 +1,7 @@
 require "payload"
 require "payload/arm/object"
 require 'base64'
-
+require_relative '../../support/helpers'
 
 RSpec.describe Payload::ARMRequest do
 
@@ -46,11 +46,10 @@ RSpec.describe Payload::ARMRequest do
                 payment = instance.create(
                   amount: 129.0,
                     customer_id: 'acct_3bW9JMoGYQul5fCIa9f8q',
-                    allocations: [
-                        Payload::PaymentItem.new(
-                            invoice_id: 'inv_3eNP6uf94xHTXr0rMyvZJ'
-                        )
-                    ],
+                    allocations: [{
+                        entry_type: 'payment',
+                        invoice_id: 'inv_3eNP6uf94xHTXr0rMyvZJ'
+                    }],
                 )
 
                 expect(payment.id).to eq($test_id)
