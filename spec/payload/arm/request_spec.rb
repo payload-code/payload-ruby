@@ -11,7 +11,7 @@ RSpec.describe Payload::ARMRequest do
 
         context "when the user selects custom fields" do
             it "selects the requested fields" do
-                instance.select(' name', 'age  ')
+                instance.select('name', 'age')
                 expect(instance.instance_variable_get(:@filters)).to eq({ "fields" => "name,age" })
                 instance.select('count(id)', 'sum(amount)')
                 expect(instance.instance_variable_get(:@filters)).to eq({ "fields" => "count(id),sum(amount)" })

@@ -1,15 +1,15 @@
 require 'payload/arm/request'
-
+require 'payload/arm/attr'
 
 module Payload
     class Session
         attr_accessor :api_key, :api_url, :api_version
-
+        
         def initialize(api_key = nil, api_url = nil, api_version = nil, **kwargs)
             @api_key = kwargs[:api_key] || api_key
             @api_url = kwargs[:api_url] || api_url || Payload.URL
             @api_version = kwargs[:api_version] || api_version || Payload.api_version
-        
+            
             Payload.constants.each do |c|
                 val = Payload.const_get(c)
                 if val.is_a?(Class) && val < Payload::ARMObject
@@ -17,11 +17,15 @@ module Payload
                 end
             end
         end
-
+        
         def _get_request(cls = nil)
             return Payload::ARMRequest.new(cls, self)
         end
 
+        def attr
+            Payload::AttrRoot.new
+        end
+        
         def query(cls)
             return self._get_request(cls)
         end

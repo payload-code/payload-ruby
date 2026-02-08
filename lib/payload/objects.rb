@@ -62,8 +62,16 @@ module Payload
 		@spec = { 'object' => 'invoice' }
 	end
 
+	class InvoiceAttachment < ARMObject
+		@spec = { 'object' => 'invoice_attachment' }
+	end
+
 	class PaymentActivation < ARMObject
 		@spec = { 'object' => 'payment_activation' }
+	end
+
+	class ProcessingSettings < ARMObject
+		@spec = { 'object' => 'processing_setting' }
 	end
 
 	class Webhook < ARMObject
@@ -96,7 +104,7 @@ module Payload
 	class ProcessingAccount < ARMObject
 		@spec = { 'object' => 'processing_account' }
 	end
-	
+
 	class Org < ARMObject
 		@spec = { 'object' => 'org', 'endpoint' => '/account/orgs' }
 	end
@@ -123,7 +131,7 @@ module Payload
 	end
 
 	class Entity < ARMObject
-		@spec = { 'object' => 'entity' }
+		@spec = { 'object' => 'entity', 'endpoint' => 'entities' }
 	end
 
 	class Stakeholder < ARMObject

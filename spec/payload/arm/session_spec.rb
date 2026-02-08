@@ -1,3 +1,4 @@
+require "base64"
 require "payload"
 require "payload/arm/object"
 
@@ -21,6 +22,19 @@ RSpec.describe Payload::Session do
                 expect(instance2.api_key).to eq('test_key')
                 expect(instance2.api_url).to eq('https://api.hello.co')
             end
+        end
+    end
+
+    describe "#attr" do
+        it "returns an AttrRoot so pl.attr.name returns an Attr (not shadowed by Class#name)" do
+            instance = described_class.new("test_key", "https://api.hello.co")
+            root = instance.attr
+
+            expect(root).to be_a(Payload::AttrRoot)
+            expect(root.id).to be_a(Payload::Attr)
+            expect(root.id.to_s).to eq("id")
+            expect(root.created_at.year).to be_a(Payload::Attr)
+            expect(root.created_at.year.to_s).to eq("year(created_at)")
         end
     end
 

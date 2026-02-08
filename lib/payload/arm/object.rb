@@ -34,6 +34,17 @@ module Payload
 			@cls.select(*args, **data, session: @session)
 		end
 
+		def order_by(*args, **data)
+			@cls.order_by(*args, **data, session: @session)
+		end
+
+		def limit(n, **data)
+			@cls.limit(n, **data, session: @session)
+		end
+
+		def offset(n, **data)
+			@cls.offset(n, **data, session: @session)
+		end
 	end
 
 	class ARMObject
@@ -93,13 +104,12 @@ module Payload
 			@data = data.transform_keys { |key| key.to_s }
 		end
 
+		# Return attribute value or nil if missing (parity with Python: _data.get(attr) returns None)
 		def method_missing(name, *args)
+			return super if args.any? || block_given?
 			attr = name.to_s
-			if @data.key?(attr)
-				return @data[attr]
-			else
-				super
-			end
+			attr = attr.chop if attr.end_with?("=")
+			@data[attr]
 		end
 
 		def [](key)
@@ -115,7 +125,25 @@ module Payload
 		end
 
 		def self.select(*args, **data)
-			return self._get_request().select(*args, **data)
+			session = data[:session]
+			data = data.reject { |k, _| k == :session }
+			return self._get_request(session).select(*args, **data)
+		end
+
+		def self.order_by(*args, **data)
+			session = data[:session]
+			data = data.reject { |k, _| k == :session }
+			self._get_request(session).order_by(*args)
+		end
+
+		def self.limit(n, **data)
+			session = data[:session]
+			self._get_request(session).limit(n)
+		end
+
+		def self.offset(n, **data)
+			session = data[:session]
+			self._get_request(session).offset(n)
 		end
 
 		def self.filter_by(*args, **data)
@@ -153,6 +181,10 @@ module Payload
 		def delete()
 			return _get_request()._request('Delete', id: self.id)
 		end
+
+		# def json
+		# 	to_json
+		# end
 
 		def to_json(*args)
 			serialized = {}
