@@ -84,6 +84,13 @@ module Payload
   class Attr
     attr_reader :param, :parent
 
+    ATTR_CALLABLE_FUNCS = %w[
+      sum count count_distinct avg min max variance stddev
+      date lower upper length abs ceil floor round
+      year month monthname day dayname dayofweek dayofyear weekofyear last_day
+      hour minute second unix_timestamp
+    ].freeze
+
     class << self
       def method_missing(name, *args)
         new(name.to_s)
@@ -110,8 +117,9 @@ module Payload
 
     def method_missing(name, *args)
       raise "cannot get attr of method" if @is_method
-      a = Attr.new(name.to_s, self)
-      a = a.call if args.empty?
+      key = name.to_s
+      a = Attr.new(key, self)
+      a = a.call if args.empty? && self.class::ATTR_CALLABLE_FUNCS.include?(key)
       a
     end
 

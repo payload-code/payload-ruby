@@ -165,7 +165,6 @@ module Payload
 			http.request(request)
 		end
 
-		# Build query params from filters, filter_objects, group_by, order_by, limit, offset.
 		def request_params
 			params = @filters.dup
 			@filter_objects.each { |f| params[f.attr] = f.opval }

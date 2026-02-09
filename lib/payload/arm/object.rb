@@ -105,9 +105,7 @@ module Payload
 		end
 
 		def method_missing(name, *args)
-			return super if args.any? || block_given?
 			attr = name.to_s
-			attr = attr.chop if attr.end_with?("=")
 			if @data.key?(attr)
 				return @data[attr]
 			else

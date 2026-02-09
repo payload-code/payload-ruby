@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# Specs for ARM request query features: group_by, order_by, limit, offset, slice, pl.attr filters.
 require "payload"
 require "payload/arm/object"
 
@@ -187,7 +186,6 @@ RSpec.describe Payload::ARMRequest do
   end
 end
 
-# Local mock to avoid conflicting with MockResponse in other specs (e.g. payment_spec).
 class QuerySpecMockResponse
   def initialize(body = '{"object":"list","values":[]}')
     @body = body

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# Specs for Attr DSL, AttrRoot, Attr, and ARMFilter (comparisons, | for OR).
 require "payload"
 require "payload/arm/attr"
 
@@ -15,10 +14,15 @@ RSpec.describe Payload::AttrRoot do
       expect(root.created_at.to_s).to eq("created_at")
     end
 
-    it "returns an Attr for chained access (exact string form depends on function vs property handling)" do
+    it "returns an Attr for chained property access (non-callable names stay as nested key)" do
       chained = root.sender.account_id
       expect(chained).to be_a(Payload::Attr)
-      expect(chained.to_s).to match(/\Asender.*account_id\z|account_id\(sender\)\z/)
+      expect(chained.to_s).to eq("sender[account_id]")
+    end
+
+    it "treats no-arg call as function when name is in ATTR_CALLABLE_FUNCS" do
+      expect(root.created_at.year().to_s).to eq("year(created_at)")
+      expect(root.created_at.month().to_s).to eq("month(created_at)")
     end
   end
 end
