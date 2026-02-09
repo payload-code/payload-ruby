@@ -45,6 +45,10 @@ module Payload
 		def offset(n, **data)
 			@cls.offset(n, **data, session: @session)
 		end
+
+		def group_by(*args, **data)
+			@cls.group_by(*args, **data, session: @session)
+		end
 	end
 
 	class ARMObject
@@ -114,7 +118,7 @@ module Payload
 		end
 
 		def [](key)
-			return @data[key]
+			return @data[key.to_s]
 		end
 
 		def _get_request()
@@ -139,6 +143,10 @@ module Payload
 
 		def self.offset(n, **data)
 			self._get_request().offset(n)
+		end
+
+		def self.group_by(*args, **data)
+			self._get_request().group_by(*args, **data)
 		end
 
 		def self.filter_by(*args, **data)
