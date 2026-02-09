@@ -36,30 +36,24 @@ RSpec.describe Payload::ARMObject do
     end
   end
 
-  describe ".order_by, .limit, .offset with session" do
-    it "delegates to ARMRequest with session and returns chainable request" do
-      session = Payload::Session.new("test_key", "https://api.test.com", "v2")
-
-      req = Payload::Invoice.order_by("created_at", session: session)
+  describe ".order_by, .limit, .offset" do
+    it "delegates to ARMRequest and returns chainable request" do
+      req = Payload::Invoice.order_by("created_at")
       expect(req).to be_a(Payload::ARMRequest)
       expect(req.instance_variable_get(:@order_by)).to include("created_at")
-      expect(req.instance_variable_get(:@session)).to eq(session)
 
-      req = Payload::Invoice.limit(10, session: session)
+      req = Payload::Invoice.limit(10)
       expect(req.instance_variable_get(:@limit)).to eq(10)
 
-      req = Payload::Invoice.offset(20, session: session)
+      req = Payload::Invoice.offset(20)
       expect(req.instance_variable_get(:@offset)).to eq(20)
     end
   end
 
-  describe ".select with session" do
-    it "passes session to _get_request so request uses session" do
-      session = Payload::Session.new("test_key", "https://api.test.com", "v2")
-
-      req = Payload::Invoice.select("id", "amount", session: session)
+  describe ".select" do
+    it "delegates to ARMRequest and sets fields filter" do
+      req = Payload::Invoice.select("id", "amount")
       expect(req).to be_a(Payload::ARMRequest)
-      expect(req.instance_variable_get(:@session)).to eq(session)
       expect(req.instance_variable_get(:@filters)["fields"]).to eq("id,amount")
     end
   end

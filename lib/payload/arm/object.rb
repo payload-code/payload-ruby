@@ -29,7 +29,7 @@ module Payload
 		def get(id)
 			return @cls.get(id, :session => @session)
 		end
-		
+
 		def select(*args, **data)
 			@cls.select(*args, **data, session: @session)
 		end
@@ -104,7 +104,6 @@ module Payload
 			@data = data.transform_keys { |key| key.to_s }
 		end
 
-		# Attribute access; missing keys call super (NoMethodError). Additive: args/block defer to super, and trailing = stripped for attr name.
 		def method_missing(name, *args)
 			return super if args.any? || block_given?
 			attr = name.to_s
@@ -129,25 +128,21 @@ module Payload
 		end
 
 		def self.select(*args, **data)
-			session = data[:session]
 			data = data.reject { |k, _| k == :session }
-			return self._get_request(session).select(*args, **data)
+			return self._get_request().select(*args, **data)
 		end
 
 		def self.order_by(*args, **data)
-			session = data[:session]
 			data = data.reject { |k, _| k == :session }
-			self._get_request(session).order_by(*args)
+			self._get_request().order_by(*args, **data)
 		end
 
 		def self.limit(n, **data)
-			session = data[:session]
-			self._get_request(session).limit(n)
+			self._get_request().limit(n)
 		end
 
 		def self.offset(n, **data)
-			session = data[:session]
-			self._get_request(session).offset(n)
+			self._get_request().offset(n)
 		end
 
 		def self.filter_by(*args, **data)
