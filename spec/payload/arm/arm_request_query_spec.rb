@@ -8,7 +8,9 @@ RSpec.describe Payload::ARMRequest do
     let(:instance) { described_class.new(Payload::Invoice, nil) }
 
     it "appends to group_by and returns self" do
-      result = instance.group_by(Payload::Attr.created_at.year(), Payload::Attr.status)
+      year_attr = Payload::Attr.new("year", Payload::Attr.new("created_at"))
+      year_attr.call
+      result = instance.group_by(year_attr, Payload::Attr.status)
       expect(result).to be(instance)
       expect(instance.instance_variable_get(:@group_by).map(&:to_s)).to eq(["year(created_at)", "status"])
     end

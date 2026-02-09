@@ -20,18 +20,18 @@ module Payload
 			@filter_objects = []
 		end
 
-		def select(*fields)
-			@filters['fields'] = fields.map(&:to_s).join(',')
+		def select(*args, **data)
+			@filters['fields'] = args.map { |a| a.strip }.join(',')
 			return self
 		end
 
-		def group_by(*fields)
-			@group_by.concat(fields)
+		def group_by(*args, **data)
+			@group_by.concat(args)
 			self
 		end
 
-		def order_by(*fields)
-			@order_by.concat(fields)
+		def order_by(*args, **data)
+			@order_by.concat(args)
 			self
 		end
 
@@ -197,6 +197,11 @@ module Payload
 			params = request_params
 			url = URI.join(@session.api_url, endpoint)
 			url.query = URI.encode_www_form(params)
+
+			if ENV["DEBUG_ARM_REQUEST"]
+				$stderr.puts "[DEBUG_ARM_REQUEST] #{method} #{url}"
+				$stderr.puts "[DEBUG_ARM_REQUEST] params: #{params.inspect}"
+			end
 
 			http = Net::HTTP.new(url.host, url.port)
 

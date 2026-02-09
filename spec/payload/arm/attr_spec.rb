@@ -78,6 +78,15 @@ RSpec.describe Payload::Attr do
     end
   end
 
+  describe "#strip" do
+    it "returns to_s.strip so Attr works with request.select(*args, **data) and args.map(&:strip)" do
+      inner = Payload::Attr.new("created_at")
+      year_attr = Payload::Attr.new("year", inner)
+      year_attr.call
+      expect(year_attr.strip).to eq("year(created_at)")
+    end
+  end
+
   describe "comparisons (return ARMFilter subclasses)" do
     let(:attr_amount) { Payload::Attr.new("amount") }
     let(:attr_status) { Payload::Attr.new("status") }

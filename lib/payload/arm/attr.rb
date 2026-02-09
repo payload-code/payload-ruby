@@ -113,6 +113,10 @@ module Payload
       @is_method ? "#{@param}(#{@parent.key})" : key
     end
 
+    def strip
+      to_s.strip
+    end
+
     def method_missing(name, *args)
       raise "cannot get attr of method" if @is_method
 

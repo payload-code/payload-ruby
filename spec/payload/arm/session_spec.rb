@@ -32,8 +32,11 @@ RSpec.describe Payload::Session do
             expect(root).to be_a(Payload::AttrRoot)
             expect(root.id).to be_a(Payload::Attr)
             expect(root.id.to_s).to eq("id")
-            expect(root.created_at.year()).to be_a(Payload::Attr)
-            expect(root.created_at.year().to_s).to eq("year(created_at)")
+
+            expect(root.created_at(:year)).to be_a(Payload::Attr)
+            expect(root.created_at(:year).to_s).to eq("year(created_at)")
+
+            expect(root.created_at.year.to_s).to eq("created_at[year]")
         end
     end
 
