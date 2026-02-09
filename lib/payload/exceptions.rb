@@ -18,6 +18,21 @@ module Payload
 		@code='400'
 	end
 
+	class TransactionDeclined < BadRequest
+		attr_reader :transaction
+
+		def initialize(msg, data = nil)
+			super(msg, data)
+			@transaction = if data && data['details'].is_a?(Hash)
+				cls = Payload.get_cls(data['details'])
+				cls = Payload::Transaction if cls.nil?
+				cls.new(data['details'], nil)
+			else
+				nil
+			end
+		end
+	end
+
 	class InvalidAttributes < PayloadError
 		@code='400'
 	end

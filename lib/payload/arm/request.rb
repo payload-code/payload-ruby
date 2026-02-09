@@ -1,5 +1,6 @@
 require "payload/exceptions"
 require "payload/utils"
+require "payload/arm/attr"
 require "net/http"
 require "uri"
 require "json"
@@ -12,27 +13,63 @@ module Payload
 			@cls = cls
 			@session = session || Payload::Session.new(Payload::api_key, Payload::api_url)
 			@filters = {}
+			@group_by = []
+			@order_by = []
+			@limit = nil
+			@offset = nil
+			@filter_objects = []
 		end
 
 		def select(*args, **data)
-			@filters['fields'] = args.map {|a| a.strip }.join(',')
-
+			@filters['fields'] = args.map { |a| a.strip }.join(',')
 			return self
 		end
 
+		def group_by(*args, **data)
+			@group_by.concat(args)
+			self
+		end
+
+		def order_by(*args, **data)
+			@order_by.concat(args)
+			self
+		end
+
+		def limit(n)
+			@limit = n
+			self
+		end
+
+		def offset(n)
+			@offset = n
+			self
+		end
+
 		def filter_by(*args, **data)
+			args.each do |f|
+				@filter_objects << f if f.respond_to?(:attr) && f.respond_to?(:opval)
+			end
 			if !@cls.nil? && @cls.poly
 				data = data.merge(@cls.poly)
 			end
-
 			@filters = @filters.merge(data)
-
 			return self
 		end
 
 		def all()
 			# TODO: I don't think this applies the @poly variable as intended?
 			return self._request('Get')
+		end
+
+		def [](key)
+			case key
+			when Range
+				raise ArgumentError, 'Negative slice indices not supported' if key.begin && key.begin < 0
+				raise ArgumentError, 'Negative slice indices not supported' if key.end && key.end < 0
+				offset(key.begin).limit(key.size).all()
+			else
+				raise TypeError, "invalid key or index: #{key.inspect}"
+			end
 		end
 
 		def get(id)
@@ -127,6 +164,16 @@ module Payload
 			http.request(request)
 		end
 
+		def request_params
+			params = @filters.dup
+			@filter_objects.each { |f| params[f.attr] = f.opval }
+			@group_by.each_with_index { |v, i| params["group_by[#{i}]"] = v.to_s }
+			@order_by.each_with_index { |v, i| params["order_by[#{i}]"] = v.to_s }
+			params['limit'] = @limit.to_s if @limit
+			params['offset'] = @offset.to_s if @offset
+			params
+		end
+
 		def _request(method, id: nil, json: nil)
 			if !@cls.nil?
 				if @cls.spec.key?("endpoint")
@@ -146,8 +193,9 @@ module Payload
 				endpoint = File.join(endpoint, id)
 			end
 
+			params = request_params
 			url = URI.join(@session.api_url, endpoint)
-			url.query = URI.encode_www_form(@filters)
+			url.query = URI.encode_www_form(params)
 
 			http = Net::HTTP.new(url.host, url.port)
 

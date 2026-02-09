@@ -29,11 +29,26 @@ module Payload
 		def get(id)
 			return @cls.get(id, :session => @session)
 		end
-		
+
 		def select(*args, **data)
 			@cls.select(*args, **data, session: @session)
 		end
 
+		def order_by(*args, **data)
+			@cls.order_by(*args, **data, session: @session)
+		end
+
+		def limit(n, **data)
+			@cls.limit(n, **data, session: @session)
+		end
+
+		def offset(n, **data)
+			@cls.offset(n, **data, session: @session)
+		end
+
+		def group_by(*args, **data)
+			@cls.group_by(*args, **data, session: @session)
+		end
 	end
 
 	class ARMObject
@@ -103,7 +118,7 @@ module Payload
 		end
 
 		def [](key)
-			return @data[key]
+			return @data[key.to_s]
 		end
 
 		def _get_request()
@@ -116,6 +131,22 @@ module Payload
 
 		def self.select(*args, **data)
 			return self._get_request().select(*args, **data)
+		end
+
+		def self.order_by(*args, **data)
+			self._get_request().order_by(*args, **data)
+		end
+
+		def self.limit(n, **data)
+			self._get_request().limit(n)
+		end
+
+		def self.offset(n, **data)
+			self._get_request().offset(n)
+		end
+
+		def self.group_by(*args, **data)
+			self._get_request().group_by(*args, **data)
 		end
 
 		def self.filter_by(*args, **data)
@@ -152,6 +183,10 @@ module Payload
 
 		def delete()
 			return _get_request()._request('Delete', id: self.id)
+		end
+
+		def json
+			to_json
 		end
 
 		def to_json(*args)
