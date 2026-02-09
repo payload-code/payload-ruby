@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Payload
-  # Filter objects produced by Attr comparisons (e.g. pl.attr.amount > 100).
-  # Request serializes these as query params: attr => opval.
   class ARMFilter
     attr_reader :attr, :opval, :val
 
@@ -16,7 +14,6 @@ module Payload
       ''
     end
 
-    # Match Python: return Equal(attr, joined opvals) so combined opval is ">100|<200", not ">>100|<200".
     def |(other)
       raise TypeError, 'invalid type' unless other.is_a?(Payload::ARMFilter)
       raise ArgumentError, '`or` only works on the same attribute' if other.attr != @attr

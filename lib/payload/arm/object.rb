@@ -104,16 +104,20 @@ module Payload
 			@data = data.transform_keys { |key| key.to_s }
 		end
 
-		# Return attribute value or nil if missing (parity with Python: _data.get(attr) returns None)
+		# Attribute access; missing keys call super (NoMethodError). Additive: args/block defer to super, and trailing = stripped for attr name.
 		def method_missing(name, *args)
 			return super if args.any? || block_given?
 			attr = name.to_s
 			attr = attr.chop if attr.end_with?("=")
-			@data[attr]
+			if @data.key?(attr)
+				return @data[attr]
+			else
+				super
+			end
 		end
 
 		def [](key)
-			return @data[key]
+			return @data[key.to_s]
 		end
 
 		def _get_request()
@@ -182,9 +186,9 @@ module Payload
 			return _get_request()._request('Delete', id: self.id)
 		end
 
-		# def json
-		# 	to_json
-		# end
+		def json
+			to_json
+		end
 
 		def to_json(*args)
 			serialized = {}

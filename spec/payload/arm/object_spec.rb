@@ -63,4 +63,58 @@ RSpec.describe Payload::ARMObject do
       expect(req.instance_variable_get(:@filters)["fields"]).to eq("id,amount")
     end
   end
+
+  describe "#[] (bracket access)" do
+    let(:session) { Payload::Session.new("test_key", "https://api.test.com", "v2") }
+
+    it "returns value for string key" do
+      obj = Payload::Invoice.new({ "id" => "inv_1", "status" => "open" }, session)
+      expect(obj["id"]).to eq("inv_1")
+      expect(obj["status"]).to eq("open")
+    end
+
+    it "returns value for symbol key (data keys are stored as strings)" do
+      obj = Payload::Invoice.new({ "id" => "inv_1" }, session)
+      expect(obj[:id]).to eq("inv_1")
+    end
+
+    it "returns nil for missing key" do
+      obj = Payload::Invoice.new({ "id" => "inv_1" }, session)
+      expect(obj["missing"]).to be_nil
+    end
+  end
+
+  describe "#to_json" do
+    let(:session) { Payload::Session.new("test_key", "https://api.test.com", "v2") }
+
+    it "includes @data in JSON output" do
+      obj = Payload::Invoice.new({ "id" => "inv_1", "object" => "invoice", "amount" => 99 }, session)
+      json = obj.to_json
+      expect(json).to include("inv_1")
+      expect(json).to include("invoice")
+      expect(json).to include("99")
+    end
+
+    it "merges class poly when present" do
+      obj = Payload::Payment.new({ "id" => "txn_1", "object" => "transaction", "type" => "payment" }, session)
+      json = obj.to_json
+      expect(json).to include("payment")
+      expect(json).to include("txn_1")
+    end
+  end
+
+  describe "#respond_to_missing?" do
+    let(:session) { Payload::Session.new("test_key", "https://api.test.com", "v2") }
+
+    it "returns true for key present in data" do
+      obj = Payload::Invoice.new({ "id" => "inv_1", "amount" => 100 }, session)
+      expect(obj.respond_to?(:id)).to be true
+      expect(obj.respond_to?(:amount)).to be true
+    end
+
+    it "returns false for key missing from data (so method_missing will call super)" do
+      obj = Payload::Invoice.new({ "id" => "inv_1" }, session)
+      expect(obj.respond_to?(:nonexistent_key)).to be false
+    end
+  end
 end

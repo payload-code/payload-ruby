@@ -33,8 +33,32 @@ RSpec.describe Payload::Session do
             expect(root).to be_a(Payload::AttrRoot)
             expect(root.id).to be_a(Payload::Attr)
             expect(root.id.to_s).to eq("id")
-            expect(root.created_at.year).to be_a(Payload::Attr)
-            expect(root.created_at.year.to_s).to eq("year(created_at)")
+            expect(root.created_at.year()).to be_a(Payload::Attr)
+            expect(root.created_at.year().to_s).to eq("year(created_at)")
+        end
+    end
+
+    describe "query chaining with session" do
+        it "passes session through query -> select -> order_by -> limit chain" do
+            instance = described_class.new("session_key", "https://api.test.com", "v2")
+            req = instance.query(Payload::Invoice).select("id", "amount").order_by("created_at").limit(5)
+
+            expect(req).to be_a(Payload::ARMRequest)
+            expect(req.instance_variable_get(:@session)).to eq(instance)
+            expect(req.instance_variable_get(:@filters)["fields"]).to eq("id,amount")
+            expect(req.instance_variable_get(:@order_by)).to include("created_at")
+            expect(req.instance_variable_get(:@limit)).to eq(5)
+        end
+
+        it "filter_by with session.attr uses AttrRoot from same session" do
+            instance = described_class.new("test_key", "https://api.test.com", "v2")
+            filter_expr = instance.attr.status == "processed"
+            req = instance.query(Payload::Transaction).filter_by(filter_expr)
+
+            expect(req.instance_variable_get(:@session)).to eq(instance)
+            expect(req.instance_variable_get(:@filter_objects)).to include(be_a(Payload::ARMEqual))
+            params = req.request_params
+            expect(params["status"]).to eq("processed")
         end
     end
 

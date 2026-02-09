@@ -9,7 +9,7 @@ RSpec.describe Payload::ARMRequest do
     let(:instance) { described_class.new(Payload::Invoice, nil) }
 
     it "appends to group_by and returns self" do
-      result = instance.group_by(Payload::Attr.created_at.year, Payload::Attr.status)
+      result = instance.group_by(Payload::Attr.created_at.year(), Payload::Attr.status)
       expect(result).to be(instance)
       expect(instance.instance_variable_get(:@group_by).map(&:to_s)).to eq(["year(created_at)", "status"])
     end
@@ -166,6 +166,23 @@ RSpec.describe Payload::ARMRequest do
       end
 
       instance.all()
+    end
+  end
+
+  describe "#filter_by with multiple filters" do
+    it "accumulates multiple filter objects and merges keyword filters into @filters" do
+      instance = described_class.new(Payload::Invoice, nil)
+      f1 = Payload::ARMEqual.new(Payload::Attr.status, "open")
+      f2 = Payload::ARMGreaterThan.new(Payload::Attr.amount, 50)
+
+      instance.filter_by(f1).filter_by(f2).filter_by(custom_key: "value")
+
+      fo = instance.instance_variable_get(:@filter_objects)
+      expect(fo).to include(f1, f2)
+      params = instance.request_params
+      expect(params["status"]).to eq("open")
+      expect(params["amount"]).to eq(">50")
+      expect(instance.instance_variable_get(:@filters)[:custom_key]).to eq("value")
     end
   end
 end
