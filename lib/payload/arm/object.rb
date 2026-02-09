@@ -128,12 +128,10 @@ module Payload
 		end
 
 		def self.select(*args, **data)
-			data = data.reject { |k, _| k == :session }
 			return self._get_request().select(*args, **data)
 		end
 
 		def self.order_by(*args, **data)
-			data = data.reject { |k, _| k == :session }
 			self._get_request().order_by(*args, **data)
 		end
 
