@@ -198,11 +198,6 @@ module Payload
 			url = URI.join(@session.api_url, endpoint)
 			url.query = URI.encode_www_form(params)
 
-			if ENV["DEBUG_ARM_REQUEST"]
-				$stderr.puts "[DEBUG_ARM_REQUEST] #{method} #{url}"
-				$stderr.puts "[DEBUG_ARM_REQUEST] params: #{params.inspect}"
-			end
-
 			http = Net::HTTP.new(url.host, url.port)
 
 			if url.port == 443
