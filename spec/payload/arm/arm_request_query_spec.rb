@@ -98,6 +98,29 @@ RSpec.describe Payload::ARMRequest do
       expect(params["offset"]).to eq("10")
       expect(params[filter_obj.attr]).to eq(filter_obj.opval)
     end
+
+    it "is encoded as URL query string in _request (url.query = URI.encode_www_form(params))" do
+      Payload::api_key = "test_key"
+      session = Payload::Session.new("test_key", "https://api.test.com", "v2")
+      instance = described_class.new(Payload::Invoice, session)
+      instance.select("id", "status").filter_by(session.attr.status == "open").order_by("created_at").limit(5).offset(1)
+
+      expected_params = instance.request_params.dup
+
+      expect(instance).to receive(:_execute_request) do |_http, request|
+        query_str = request.path.split("?", 2)[1]
+        expect(query_str).not_to be_nil
+        decoded = URI.decode_www_form(query_str || "").to_h
+        expected_params.each do |key, value|
+          expect(decoded[key]).to eq(value.to_s)
+        end
+        expect(decoded).to include("fields" => "id,status", "limit" => "5", "offset" => "1")
+        expect(decoded.keys).to include("status", "order_by[0]")
+        QuerySpecMockResponse.new('{"object":"list","values":[]}')
+      end
+
+      instance.all()
+    end
   end
 
   describe "#[] (slice)" do
