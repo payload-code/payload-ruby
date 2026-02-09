@@ -114,7 +114,7 @@ module Payload
 		end
 
 		def [](key)
-			return @data[key.to_s]
+			return @data[key]
 		end
 
 		def _get_request()

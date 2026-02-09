@@ -4,7 +4,7 @@ require "payload"
 require "payload/arm/object"
 require_relative "../../support/helpers"
 
-RSpec.describe "ARM request format validation (live API)" do
+RSpec.describe "confirm request format is valid" do
   include_context "test helpers"
 
   [1, 2].each do |api_version|

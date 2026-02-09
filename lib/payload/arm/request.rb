@@ -61,7 +61,6 @@ module Payload
 			return self._request('Get')
 		end
 
-		# Slice support: request[10..19] => offset(10).limit(10).all()
 		def [](key)
 			case key
 			when Range
