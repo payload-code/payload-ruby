@@ -20,9 +20,19 @@ RSpec.describe Payload::AttrRoot do
       expect(chained.to_s).to eq("sender[account_id]")
     end
 
-    it "treats no-arg call as function when name is in ATTR_CALLABLE_FUNCS" do
-      expect(root.created_at.year().to_s).to eq("year(created_at)")
-      expect(root.created_at.month().to_s).to eq("month(created_at)")
+    it "treats no-arg access as nested attribute" do
+      expect(root.created_at.month.to_s).to eq("created_at[month]")
+      expect(root.created_at.year.to_s).to eq("created_at[year]")
+    end
+
+    it "supports pl.attr.created_at(:month) style (function as symbol arg)" do
+      expect(root.created_at(:month).to_s).to eq("month(created_at)")
+      expect(root.created_at(:year).to_s).to eq("year(created_at)")
+      expect(root.amount(:sum).to_s).to eq("sum(amount)")
+    end
+
+    it "supports nested attr with symbol: pl.attr.totals.total(:sum) => sum(totals[total])" do
+      expect(root.totals.total(:sum).to_s).to eq("sum(totals[total])")
     end
   end
 end
@@ -177,6 +187,16 @@ RSpec.describe Payload::ARMFilter do
     it "ARMLessThan has < prefix" do
       f = Payload::ARMLessThan.new("amount", 200)
       expect(f.opval).to eq("<200")
+    end
+
+    it "ARMGreaterThanEqual has >= prefix" do
+      f = Payload::ARMGreaterThanEqual.new("amount", 100)
+      expect(f.opval).to eq(">=100")
+    end
+
+    it "ARMLessThanEqual has <= prefix" do
+      f = Payload::ARMLessThanEqual.new("amount", 100)
+      expect(f.opval).to eq("<=100")
     end
 
     it "ARMContains has ?* prefix" do

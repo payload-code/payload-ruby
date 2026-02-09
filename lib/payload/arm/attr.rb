@@ -68,7 +68,12 @@ module Payload
   # Session#attr returns this instead of the Attr class to avoid Class/Module methods (e.g. .name) shadowing attribute names.
   class AttrRoot
     def method_missing(name, *args)
-      Attr.new(name.to_s)
+      if args.size == 1 && args[0].is_a?(Symbol)
+        inner = Attr.new(name.to_s)
+        Attr.new(args[0].to_s, inner).call
+      else
+        Attr.new(name.to_s)
+      end
     end
 
     def respond_to_missing?(name, include_private = false)
@@ -78,18 +83,11 @@ module Payload
 
   # Attribute DSL for select/group_by/order_by and filter expressions.
   # - pl.attr.id -> "id"
-  # - pl.attr.created_at.month() -> "month(created_at)"
-  # - pl.attr.amount.sum() -> "sum(amount)"
+  # - pl.attr.created_at(:month) -> "month(created_at)"
+  # - pl.attr.amount(:sum) -> "sum(amount)"
   # - pl.attr.sender.account_id -> "sender[account_id]"
   class Attr
     attr_reader :param, :parent
-
-    ATTR_CALLABLE_FUNCS = %w[
-      sum count count_distinct avg min max variance stddev
-      date lower upper length abs ceil floor round
-      year month monthname day dayname dayofweek dayofyear weekofyear last_day
-      hour minute second unix_timestamp
-    ].freeze
 
     class << self
       def method_missing(name, *args)
@@ -117,10 +115,13 @@ module Payload
 
     def method_missing(name, *args)
       raise "cannot get attr of method" if @is_method
-      key = name.to_s
-      a = Attr.new(key, self)
-      a = a.call if args.empty? && self.class::ATTR_CALLABLE_FUNCS.include?(key)
-      a
+
+      if args.size == 1 && args[0].is_a?(Symbol)
+        inner = Attr.new(name.to_s, self)
+        Attr.new(args[0].to_s, inner).call
+      else
+        Attr.new(name.to_s, self)
+      end
     end
 
     def respond_to_missing?(name, include_private = false)
