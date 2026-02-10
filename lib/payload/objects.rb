@@ -71,7 +71,7 @@ module Payload
 	end
 
 	class ProcessingSettings < ARMObject
-		@spec = { 'object' => 'processing_setting' }
+		@spec = { 'object' => 'processing_settings', 'endpoint' => 'processing_settings' }
 	end
 
 	class Webhook < ARMObject
