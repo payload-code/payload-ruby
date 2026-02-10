@@ -179,12 +179,14 @@ module Payload
 				if @cls.spec.key?("endpoint")
 					endpoint = @cls.spec["endpoint"]
 				else
-					endpoint = "/"+@cls.spec["object"]+"s"
+					obj = @cls.spec["object"]
+					endpoint = "/" + (obj.end_with?("s") ? obj : obj + "s")
 				end
 			else
 				if json.is_a? Array
 					if json.all? {|obj| obj.key?("object") }
-						endpoint = json[0]["object"]+"s"
+						obj = json[0]["object"]
+						endpoint = (obj.end_with?("s") ? obj : obj + "s")
 					end
 				end
 			end
