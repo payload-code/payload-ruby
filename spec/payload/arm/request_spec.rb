@@ -1017,4 +1017,41 @@ RSpec.describe Payload::ARMRequest do
             end
         end
     end
+
+    describe "default endpoint pluralization (object name → path)" do
+        context "when spec object name ends with 's'" do
+            it "uses object name as path segment without appending 's'" do
+                klass = Class.new(Payload::ARMObject) do
+                    @spec = { "object" => "processing_settings" }
+                end
+                session = Payload::Session.new("test_key", "https://api.test.com")
+                instance = Payload::ARMRequest.new(klass, session)
+
+                expect(instance).to receive(:_execute_request) do |_http, request|
+                    expect(request.path).to start_with("/processing_settings/")
+                    expect(request.path).not_to include("processing_settingss")
+                    double(code: "200", body: '{"object":"processing_settings","id":"ps_123"}')
+                end
+
+                instance.get("ps_123")
+            end
+        end
+
+        context "when spec object name does not end with 's'" do
+            it "appends 's' to build path segment" do
+                klass = Class.new(Payload::ARMObject) do
+                    @spec = { "object" => "transaction" }
+                end
+                session = Payload::Session.new("test_key", "https://api.test.com")
+                instance = Payload::ARMRequest.new(klass, session)
+
+                expect(instance).to receive(:_execute_request) do |_http, request|
+                    expect(request.path).to start_with("/transactions/")
+                    double(code: "200", body: '{"object":"transaction","id":"txn_456"}')
+                end
+
+                instance.get("txn_456")
+            end
+        end
+    end
 end
