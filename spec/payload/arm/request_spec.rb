@@ -307,14 +307,7 @@ RSpec.describe Payload::ARMRequest do
                 $test_refresh_token = 'ref_' + rand(900000..999999).to_s
 
                 Payload::api_key = 'test_key'
-                session = Payload::Session.new('test_key', 'https://api.payload.com')
-
-                oauth_token = Payload::OAuthToken.new(
-                    code: 'auth_code_123',
-                    grant_type: 'authorization_code',
-                    client_id: 'org_abc',
-                    client_secret: 'secret_key_xyz'
-                )
+                pl = Payload::Session.new('test_key', 'https://api.payload.com')
 
                 expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |_req, http, request|
                     expect(request.method).to eq("POST")
@@ -343,13 +336,18 @@ RSpec.describe Payload::ARMRequest do
                     MockResponse.new
                 end
 
-                result = session.create(oauth_token)
+                oauth_token = pl.create(Payload::OAuthToken.new({
+                    code: 'auth_code_123',
+                    grant_type: 'authorization_code',
+                    client_id: 'org_abc',
+                    client_secret: 'secret_key_xyz'
+                }))
 
-                expect(result).to be_a(Payload::OAuthToken)
-                expect(result.object).to eq("oauth_token")
-                expect(result.access_token).to eq($test_access_token)
-                expect(result.refresh_token).to eq($test_refresh_token)
-                expect(result.session).to eq(session)
+                expect(oauth_token).to be_a(Payload::OAuthToken)
+                expect(oauth_token.object).to eq("oauth_token")
+                expect(oauth_token.access_token).to eq($test_access_token)
+                expect(oauth_token.refresh_token).to eq($test_refresh_token)
+                expect(oauth_token.session).to eq(pl)
             end
         end
     end
