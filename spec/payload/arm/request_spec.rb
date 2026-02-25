@@ -299,6 +299,59 @@ RSpec.describe Payload::ARMRequest do
                 expect(customers[2].session).to eq(instance.instance_variable_get(:@session))
             end
         end
+
+        context "when the user creates a single ARMObject via Session#create" do
+            it "executes the appropriate request and returns the appropriate object" do
+
+                $test_access_token = 'tok_' + rand(900000..999999).to_s
+                $test_refresh_token = 'ref_' + rand(900000..999999).to_s
+
+                Payload::api_key = 'test_key'
+                session = Payload::Session.new('test_key', 'https://api.payload.com')
+
+                oauth_token = Payload::OAuthToken.new(
+                    code: 'auth_code_123',
+                    grant_type: 'authorization_code',
+                    client_id: 'org_abc',
+                    client_secret: 'secret_key_xyz'
+                )
+
+                expect_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |_req, http, request|
+                    expect(request.method).to eq("POST")
+                    expect(http.address).to eq("api.payload.com")
+                    expect(Base64.decode64(request['authorization'].split(' ')[1]).split(':')[0]).to eq('test_key')
+                    expect(request.path).to eq("/oauth/token?")
+                    expect(request.body).to eq("{\"code\":\"auth_code_123\",\"grant_type\":\"authorization_code\",\"client_id\":\"org_abc\",\"client_secret\":\"secret_key_xyz\"}")
+
+                    class MockResponse
+                        def initialize
+                        end
+
+                        def code
+                            '200'
+                        end
+
+                        def body
+                            '{
+                                "object": "oauth_token",
+                                "access_token": "' + $test_access_token + '",
+                                "refresh_token": "' + $test_refresh_token + '"
+                            }'
+                        end
+                    end
+
+                    MockResponse.new
+                end
+
+                result = session.create(oauth_token)
+
+                expect(result).to be_a(Payload::OAuthToken)
+                expect(result.object).to eq("oauth_token")
+                expect(result.access_token).to eq($test_access_token)
+                expect(result.refresh_token).to eq($test_refresh_token)
+                expect(result.session).to eq(session)
+            end
+        end
     end
 
     describe "#get" do

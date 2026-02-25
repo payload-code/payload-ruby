@@ -152,6 +152,10 @@ module Payload
 
 				data = { object: 'list', values: data }
 			else
+				if data.kind_of?(ARMObject)
+					@cls = data.class
+					data = data.data
+				end
 				if @cls.poly
 					data = data.merge(@cls.poly)
 				end
