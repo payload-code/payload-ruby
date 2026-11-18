@@ -350,6 +350,71 @@ RSpec.describe Payload::ARMRequest do
                 expect(oauth_token.session).to eq(pl)
             end
         end
+
+        describe "idempotency_key" do
+            let(:session) { Payload::Session.new('test_key', 'https://api.payload.com') }
+            let(:sent_requests) { [] }
+
+            before do
+                response = double(code: '200', body: '{"id": "acct_1", "object": "customer"}')
+                allow_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |_req, _http, request|
+                    sent_requests << request
+                    response
+                end
+            end
+
+            context "when passed to Session#create with an ARMObject" do
+                before { session.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567') }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+
+                it "leaves the request body unchanged" do
+                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
+                end
+            end
+
+            context "when omitted from Session#create" do
+                before { session.create(Payload::Customer.new(name: 'Jane')) }
+
+                it "does not send the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to be_nil
+                end
+            end
+
+            context "when the session has an api_version" do
+                let(:session) { Payload::Session.new('test_key', 'https://api.payload.com', '2.1') }
+
+                before { session.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567') }
+
+                it "sends both the X-API-Version and Idempotency-Key headers" do
+                    expect(sent_requests.last['X-API-Version']).to eq('2.1')
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+            end
+
+            {
+                'IdempotencyInProgress' => ['409', Payload::IdempotencyInProgress],
+                'IdempotencyUnreplayable' => ['409', Payload::IdempotencyUnreplayable],
+                'IdempotencyKeyReused' => ['400', Payload::IdempotencyKeyReused],
+                'ServiceUnavailable' => ['503', Payload::ServiceUnavailable],
+            }.each do |error_type, (status, error_class)|
+                context "when the API responds with #{status} #{error_type}" do
+                    before do
+                        error_body = { 'object' => 'error', 'error_type' => error_type, 'error_description' => 'nope' }
+                        allow_any_instance_of(Payload::ARMRequest).to receive(:_execute_request)
+                            .and_return(double(code: status, body: error_body.to_json))
+                    end
+
+                    it "raises #{error_class}" do
+                        expect {
+                            session.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567')
+                        }.to raise_error(error_class, 'nope')
+                    end
+                end
+            end
+        end
     end
 
     describe "#get" do

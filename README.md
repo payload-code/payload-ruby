@@ -7,7 +7,7 @@ A RubyGem for integrating [Payload](https://payload.com).
 To install using [Bundler](https://bundler.io):
 
 ```ruby
-gem 'payload-api', '~> 0.5.0'
+gem 'payload-api', '~> 0.7.0'
 ```
 
 To install using gem:
@@ -77,6 +77,26 @@ payment = Payload::Payment.create(
     payment_method: Payload::Card(
         card_number: '4242 4242 4242 4242'
     )
+)
+```
+
+### Retrying Creates Safely
+
+Pass an `idempotency_key` to `Session#create` to retry a create without duplicating the object.
+See the [Idempotency documentation](https://docs.payload.com/v2/api-reference/idempotency-key)
+for key rules and responses.
+
+```ruby
+pl = Payload::Session.new('secret_key_3bW9JMZtPVDOfFNzwRdfE')
+
+payment = pl.create(
+    Payload::Payment.new(
+        amount: 100.0,
+        payment_method: Payload::Card.new(
+            card_number: '4242 4242 4242 4242'
+        )
+    ),
+    idempotency_key: 'order-1234'
 )
 ```
 

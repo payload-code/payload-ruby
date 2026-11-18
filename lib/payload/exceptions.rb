@@ -33,6 +33,10 @@ module Payload
 		end
 	end
 
+	class IdempotencyKeyReused < BadRequest
+		@code='400'
+	end
+
 	class InvalidAttributes < PayloadError
 		@code='400'
 	end
@@ -47,6 +51,14 @@ module Payload
 
 	class NotFound < PayloadError
 		@code='404'
+	end
+
+	class IdempotencyInProgress < PayloadError
+		@code='409'
+	end
+
+	class IdempotencyUnreplayable < PayloadError
+		@code='409'
 	end
 
 	class TooManyRequests < PayloadError
