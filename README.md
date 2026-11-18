@@ -48,7 +48,7 @@ Or with sessions:
 
 ```ruby
 pl = Payload::Session.new(
-    'secret_key_3bW9JMZtPVDOfFNzwRdfE',
+    'secret_key_3bW9JMZtPVDOfFNzwRdfE', 
     api_version: 'v2'
 )
 ```
@@ -60,6 +60,7 @@ API v2 introduces new objects including `Profile`, `Intent`, `Entity`, `Transfer
 Interfacing with the Payload API is done primarily through Payload Objects. Below is an example of
 creating a customer using the `Payload::Customer` object.
 
+
 ```ruby
 # Create a Customer
 customer = Payload::Customer.create(
@@ -67,6 +68,7 @@ customer = Payload::Customer.create(
 	name: 'Matt Perez'
 )
 ```
+
 
 ```ruby
 # Create a Payment
