@@ -375,11 +375,46 @@ RSpec.describe Payload::ARMRequest do
                 end
             end
 
-            context "when omitted from Session#create" do
-                before { session.create(Payload::Customer.new(name: 'Jane')) }
+            context "when passed to a session resource create (session.Customer.create)" do
+                before { session.Customer.create(name: 'Jane', idempotency_key: 'order-abc-1234567') }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+
+                it "does not add idempotency_key to the request body" do
+                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
+                end
+            end
+
+            context "when passed to a resource class create (Customer.create)" do
+                before { Payload::Customer.create(name: 'Jane', idempotency_key: 'order-abc-1234567', session: session) }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+
+                it "does not add idempotency_key to the request body" do
+                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
+                end
+            end
+
+            context "when passed to a resource class create with an ARMObject" do
+                before { Payload::Customer.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567', session: session) }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+            end
+
+            context "when omitted" do
+                before do
+                    session.create(Payload::Customer.new(name: 'Jane'))
+                    session.Customer.create(name: 'Jane')
+                end
 
                 it "does not send the Idempotency-Key header" do
-                    expect(sent_requests.last['Idempotency-Key']).to be_nil
+                    expect(sent_requests.map { |request| request['Idempotency-Key'] }).to eq([nil, nil])
                 end
             end
         end

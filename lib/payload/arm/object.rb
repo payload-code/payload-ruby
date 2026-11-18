@@ -158,10 +158,11 @@ module Payload
 		def self.create(*args, **data)
 			session = data[:session]
 			data.delete(:session)
+			idempotency_key = data.delete(:idempotency_key)
 			if args.length != 0
-				return self._get_request(session).create(args[0])
+				return self._get_request(session).create(args[0], idempotency_key)
 			else
-				return self._get_request(session).create(data)
+				return self._get_request(session).create(data, idempotency_key)
 			end
 		end
 

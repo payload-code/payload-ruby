@@ -100,6 +100,18 @@ payment = pl.create(
 )
 ```
 
+`idempotency_key` also works on the resource `create` methods:
+
+```ruby
+payment = Payload::Payment.create(
+    amount: 100.0,
+    payment_method: Payload::Card.new(
+        card_number: '4242 4242 4242 4242'
+    ),
+    idempotency_key: 'order-1234'
+)
+```
+
 ### Accessing Object Attributes
 
 Object attributes are accessible through both dot and bracket notation.
