@@ -61,7 +61,6 @@ RSpec.describe 'Account Integration Tests - V2' do
         type: 'processing',
         name: 'Processing Account',
         processing: {
-          status:      { funding: 'pending' },
           settings_id: org.processing_settings_id,
         },
         payment_methods: [session.PaymentMethod.new(
