@@ -48,7 +48,7 @@ Or with sessions:
 
 ```ruby
 pl = Payload::Session.new(
-    'secret_key_3bW9JMZtPVDOfFNzwRdfE', 
+    'secret_key_3bW9JMZtPVDOfFNzwRdfE',
     api_version: 'v2'
 )
 ```
@@ -60,7 +60,6 @@ API v2 introduces new objects including `Profile`, `Intent`, `Entity`, `Transfer
 Interfacing with the Payload API is done primarily through Payload Objects. Below is an example of
 creating a customer using the `Payload::Customer` object.
 
-
 ```ruby
 # Create a Customer
 customer = Payload::Customer.create(
@@ -68,7 +67,6 @@ customer = Payload::Customer.create(
 	name: 'Matt Perez'
 )
 ```
-
 
 ```ruby
 # Create a Payment
@@ -85,22 +83,6 @@ payment = Payload::Payment.create(
 Pass an `idempotency_key` to `create` to retry a create without duplicating the object.
 See the [Idempotency documentation](https://docs.payload.com/v2/api-reference/idempotency-key)
 for key rules and responses.
-
-```ruby
-pl = Payload::Session.new('secret_key_3bW9JMZtPVDOfFNzwRdfE')
-
-payment = pl.create(
-    Payload::Payment.new(
-        amount: 100.0,
-        payment_method: Payload::Card.new(
-            card_number: '4242 4242 4242 4242'
-        )
-    ),
-    idempotency_key: 'order-1234'
-)
-```
-
-`idempotency_key` also works on the resource `create` methods:
 
 ```ruby
 payment = Payload::Payment.create(
