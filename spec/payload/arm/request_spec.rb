@@ -383,6 +383,17 @@ RSpec.describe Payload::ARMRequest do
                 end
             end
 
+            context "when the session has an api_version" do
+                let(:session) { Payload::Session.new('test_key', 'https://api.payload.com', '2.1') }
+
+                before { session.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567') }
+
+                it "sends both the X-API-Version and Idempotency-Key headers" do
+                    expect(sent_requests.last['X-API-Version']).to eq('2.1')
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+            end
+
             {
                 'IdempotencyInProgress' => ['409', Payload::IdempotencyInProgress],
                 'IdempotencyUnreplayable' => ['409', Payload::IdempotencyUnreplayable],

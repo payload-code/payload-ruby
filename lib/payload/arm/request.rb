@@ -131,7 +131,7 @@ module Payload
 				._request('Delete')
 		end
 
-		def create(data, idempotency_key = nil)
+		def create(data, headers = nil)
 			if data.is_a? Array
 				data = data.map do |obj|
 					if obj.kind_of?(ARMObject)
@@ -161,7 +161,7 @@ module Payload
 				end
 			end
 
-			return self._request('Post', json: data, idempotency_key: idempotency_key)
+			return self._request('Post', json: data, headers: headers)
 		end
 
 		def _execute_request(http, request)
@@ -178,7 +178,7 @@ module Payload
 			params
 		end
 
-		def _request(method, id: nil, json: nil, idempotency_key: nil)
+		def _request(method, id: nil, json: nil, headers: nil)
 			if !@cls.nil?
 				if @cls.spec.key?("endpoint")
 					endpoint = @cls.spec["endpoint"]
@@ -217,13 +217,10 @@ module Payload
 				request.add_field('Content-Type', 'application/json')
 			end
 
-			if @session.api_version
-				request.add_field('X-API-Version', @session.api_version)
-			end
-
-			if idempotency_key
-				request.add_field('Idempotency-Key', idempotency_key)
-			end
+			request_headers = {}
+			request_headers['X-API-Version'] = @session.api_version if @session.api_version
+			request_headers.merge!(headers) if headers
+			request_headers.each { |name, value| request.add_field(name, value) }
 
 			response = self._execute_request(http, request)
 

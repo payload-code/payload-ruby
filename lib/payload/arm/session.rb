@@ -31,7 +31,8 @@ module Payload
         end
 
         def create(objects, idempotency_key: nil)
-            return self._get_request().create(objects, idempotency_key)
+            headers = { 'Idempotency-Key' => idempotency_key } if idempotency_key
+            return self._get_request().create(objects, headers)
         end
 
         def update(objects)
