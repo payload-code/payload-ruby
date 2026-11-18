@@ -80,6 +80,22 @@ payment = Payload::Payment.create(
 )
 ```
 
+### Retrying Creates Safely
+
+Pass an `idempotency_key` when creating an object to retry the create without duplicating it.
+See the [Idempotency documentation](https://docs.payload.com/v2/api-reference/idempotency-key)
+for key rules and responses.
+
+```ruby
+payment = Payload::Payment.create(
+    amount: 100.0,
+    payment_method: Payload::Card(
+        card_number: '4242 4242 4242 4242'
+    ),
+    idempotency_key: 'order-1234'
+)
+```
+
 ### Accessing Object Attributes
 
 Object attributes are accessible through both dot and bracket notation.

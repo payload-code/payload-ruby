@@ -350,6 +350,51 @@ RSpec.describe Payload::ARMRequest do
                 expect(oauth_token.session).to eq(pl)
             end
         end
+
+        describe "idempotency_key" do
+            let(:session) { Payload::Session.new('test_key', 'https://api.payload.com') }
+            let(:sent_requests) { [] }
+
+            before do
+                response = double(code: '200', body: '{"id": "acct_1", "object": "customer"}')
+                allow_any_instance_of(Payload::ARMRequest).to receive(:_execute_request) do |_req, _http, request|
+                    sent_requests << request
+                    response
+                end
+            end
+
+            context "when passed to Customer.create" do
+                before { session.Customer.create(name: 'Jane', idempotency_key: 'order-abc-1234567') }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+
+                it "omits idempotency_key from the request body" do
+                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
+                end
+            end
+
+            context "when set on an ARMObject passed to Session#create" do
+                before { session.create(Payload::Customer.new(name: 'Jane', idempotency_key: 'order-abc-1234567')) }
+
+                it "sends the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
+                end
+
+                it "omits idempotency_key from the request body" do
+                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
+                end
+            end
+
+            context "when omitted" do
+                before { session.Customer.create(name: 'Jane') }
+
+                it "does not send the Idempotency-Key header" do
+                    expect(sent_requests.last['Idempotency-Key']).to be_nil
+                end
+            end
+        end
     end
 
     describe "#get" do

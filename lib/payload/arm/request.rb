@@ -156,12 +156,14 @@ module Payload
 					@cls = data.class
 					data = data.data
 				end
+				idempotency_key = data[:idempotency_key] || data['idempotency_key']
+				data = data.reject { |key, _| key.to_s == 'idempotency_key' }
 				if @cls.poly
 					data = data.merge(@cls.poly)
 				end
 			end
 
-			return self._request('Post', json: data)
+			return self._request('Post', json: data, idempotency_key: idempotency_key)
 		end
 
 		def _execute_request(http, request)
@@ -178,7 +180,7 @@ module Payload
 			params
 		end
 
-		def _request(method, id: nil, json: nil)
+		def _request(method, id: nil, json: nil, idempotency_key: nil)
 			if !@cls.nil?
 				if @cls.spec.key?("endpoint")
 					endpoint = @cls.spec["endpoint"]
@@ -219,6 +221,10 @@ module Payload
 
 			if @session.api_version
 				request.add_field('X-API-Version', @session.api_version)
+			end
+
+			if idempotency_key
+				request.add_field('Idempotency-Key', idempotency_key)
 			end
 
 			response = self._execute_request(http, request)
