@@ -98,9 +98,6 @@ payment = pl.create(
 )
 ```
 
-If the same key is still being processed, `create` raises `Payload::IdempotencyInProgress`. Retry the
-request after a short wait. Reusing a key with a different request raises `Payload::IdempotencyKeyReused`.
-
 ### Accessing Object Attributes
 
 Object attributes are accessible through both dot and bracket notation.

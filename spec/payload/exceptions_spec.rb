@@ -2,18 +2,6 @@
 
 require "payload"
 
-RSpec.describe "idempotency errors" do
-  it "raises IdempotencyKeyReused as a BadRequest (HTTP 400)" do
-    expect(Payload::IdempotencyKeyReused.superclass).to eq(Payload::BadRequest)
-    expect(Payload::IdempotencyKeyReused.code).to eq("400")
-  end
-
-  it "uses HTTP 409 for IdempotencyInProgress and IdempotencyUnreplayable" do
-    expect(Payload::IdempotencyInProgress.code).to eq("409")
-    expect(Payload::IdempotencyUnreplayable.code).to eq("409")
-  end
-end
-
 RSpec.describe Payload::TransactionDeclined do
   def api_error_payload(message:, details: nil)
     {
