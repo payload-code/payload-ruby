@@ -7,7 +7,7 @@ A RubyGem for integrating [Payload](https://payload.com).
 To install using [Bundler](https://bundler.io):
 
 ```ruby
-gem 'payload-api', '~> 0.5.0'
+gem 'payload-api', '~> 0.7.0'
 ```
 
 To install using gem:
@@ -80,19 +80,26 @@ payment = Payload::Payment.create(
 
 ### Retrying Creates Safely
 
-Pass an `idempotency_key` to `create` to retry a create without duplicating the object.
+Pass an `idempotency_key` to `Session#create` to retry a create without duplicating the object.
 See the [Idempotency documentation](https://docs.payload.com/v2/api-reference/idempotency-key)
 for key rules and responses.
 
 ```ruby
-payment = Payload::Payment.create(
-    amount: 100.0,
-    payment_method: Payload::Card.new(
-        card_number: '4242 4242 4242 4242'
+pl = Payload::Session.new('secret_key_3bW9JMZtPVDOfFNzwRdfE')
+
+payment = pl.create(
+    Payload::Payment.new(
+        amount: 100.0,
+        payment_method: Payload::Card.new(
+            card_number: '4242 4242 4242 4242'
+        )
     ),
     idempotency_key: 'order-1234'
 )
 ```
+
+If the same key is still being processed, `create` raises `Payload::IdempotencyInProgress`. Retry the
+request after a short wait. Reusing a key with a different request raises `Payload::IdempotencyKeyReused`.
 
 ### Accessing Object Attributes
 
