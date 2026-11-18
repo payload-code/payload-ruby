@@ -82,15 +82,19 @@ payment = Payload::Payment.create(
 
 ### Retrying Creates Safely
 
-Pass an `idempotency_key` when creating an object to retry the create without duplicating it.
+Pass an `idempotency_key` to `create` to retry a create without duplicating the object.
 See the [Idempotency documentation](https://docs.payload.com/v2/api-reference/idempotency-key)
 for key rules and responses.
 
 ```ruby
-payment = Payload::Payment.create(
-    amount: 100.0,
-    payment_method: Payload::Card(
-        card_number: '4242 4242 4242 4242'
+pl = Payload::Session.new('secret_key_3bW9JMZtPVDOfFNzwRdfE')
+
+payment = pl.create(
+    Payload::Payment.new(
+        amount: 100.0,
+        payment_method: Payload::Card.new(
+            card_number: '4242 4242 4242 4242'
+        )
     ),
     idempotency_key: 'order-1234'
 )

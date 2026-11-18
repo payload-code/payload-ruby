@@ -30,8 +30,8 @@ module Payload
             return self._get_request(cls)
         end
 
-        def create(objects)
-            return self._get_request().create(objects)
+        def create(objects, idempotency_key: nil)
+            return self._get_request().create(objects, idempotency_key)
         end
 
         def update(objects)

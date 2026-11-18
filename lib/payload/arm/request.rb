@@ -131,7 +131,7 @@ module Payload
 				._request('Delete')
 		end
 
-		def create(data)
+		def create(data, idempotency_key = nil)
 			if data.is_a? Array
 				data = data.map do |obj|
 					if obj.kind_of?(ARMObject)
@@ -156,8 +156,6 @@ module Payload
 					@cls = data.class
 					data = data.data
 				end
-				idempotency_key = data[:idempotency_key] || data['idempotency_key']
-				data = data.reject { |key, _| key.to_s == 'idempotency_key' }
 				if @cls.poly
 					data = data.merge(@cls.poly)
 				end

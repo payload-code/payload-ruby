@@ -363,32 +363,20 @@ RSpec.describe Payload::ARMRequest do
                 end
             end
 
-            context "when passed to Customer.create" do
-                before { session.Customer.create(name: 'Jane', idempotency_key: 'order-abc-1234567') }
+            context "when passed to Session#create with an ARMObject" do
+                before { session.create(Payload::Customer.new(name: 'Jane'), idempotency_key: 'order-abc-1234567') }
 
                 it "sends the Idempotency-Key header" do
                     expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
                 end
 
-                it "omits idempotency_key from the request body" do
+                it "does not add idempotency_key to the request body" do
                     expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
                 end
             end
 
-            context "when set on an ARMObject passed to Session#create" do
-                before { session.create(Payload::Customer.new(name: 'Jane', idempotency_key: 'order-abc-1234567')) }
-
-                it "sends the Idempotency-Key header" do
-                    expect(sent_requests.last['Idempotency-Key']).to eq('order-abc-1234567')
-                end
-
-                it "omits idempotency_key from the request body" do
-                    expect(JSON.parse(sent_requests.last.body)).to eq({ 'name' => 'Jane' })
-                end
-            end
-
-            context "when omitted" do
-                before { session.Customer.create(name: 'Jane') }
+            context "when omitted from Session#create" do
+                before { session.create(Payload::Customer.new(name: 'Jane')) }
 
                 it "does not send the Idempotency-Key header" do
                     expect(sent_requests.last['Idempotency-Key']).to be_nil
